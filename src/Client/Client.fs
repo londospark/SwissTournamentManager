@@ -39,7 +39,7 @@ let init () : Model * Cmd<Msg> =
 let update (msg : Msg) (currentModel : Model) : Model * Cmd<Msg> =
     match currentModel.Counter, msg with
     | Some counter, Increment ->
-        let nextModel = { currentModel with Counter = Some { counter with  Value = counter.Value + 1 } }
+        let nextModel = { currentModel with Counter = Some { counter with Value = counter.Value + 1 } }
         nextModel, Cmd.none
     | Some counter, Decrement ->
         let nextModel = { currentModel with Counter = Some { counter with Value = counter.Value - 1 } }
