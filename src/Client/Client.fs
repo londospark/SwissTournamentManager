@@ -39,10 +39,10 @@ let init () : Model * Cmd<Msg> =
 let update (msg : Msg) (currentModel : Model) : Model * Cmd<Msg> =
     match currentModel.Counter, msg with
     | Some counter, Increment ->
-        let nextModel = { currentModel with Counter = Some { Value = counter.Value + 1 } }
+        let nextModel = { currentModel with Counter = Some { counter with  Value = counter.Value + 1 } }
         nextModel, Cmd.none
     | Some counter, Decrement ->
-        let nextModel = { currentModel with Counter = Some { Value = counter.Value - 1 } }
+        let nextModel = { currentModel with Counter = Some { counter with Value = counter.Value - 1 } }
         nextModel, Cmd.none
     | _, InitialCountLoaded initialCount->
         let nextModel = { Counter = Some initialCount }
@@ -77,6 +77,10 @@ let show = function
     | { Counter = Some counter } -> string counter.Value
     | { Counter = None   } -> "Loading..."
 
+let qr = function
+    | { Counter = Some counter } -> counter.Qr
+    | { Counter = None   } -> "https://netflixroulette.files.wordpress.com/2013/01/image-not-found.gif"
+
 let button txt onClick =
     Button.button
         [ Button.IsFullWidth
@@ -97,7 +101,7 @@ let view (model : Model) (dispatch : Msg -> unit) =
                 Columns.columns []
                     [ Column.column [] [ button "-" (fun _ -> dispatch Decrement) ]
                       Column.column [] [ button "+" (fun _ -> dispatch Increment) ] ]
-                canvas [ Id "qrcode" ] [] ]
+                img [ Src (qr model) ] ]
 
           Footer.footer [ ]
                 [ Content.content [ Content.Modifiers [ Modifier.TextAlignment (Screen.All, TextAlignment.Centered) ] ]

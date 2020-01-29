@@ -10,6 +10,7 @@ open Shared
 
 open SkiaSharp
 open SkiaSharp.QrCode.Image
+open System
 
 
 let tryGetEnv = System.Environment.GetEnvironmentVariable >> function null | "" -> None | x -> Some x
@@ -19,15 +20,20 @@ let publicPath = Path.GetFullPath "../Client/public"
 let port =
     "SERVER_PORT"
     |> tryGetEnv |> Option.map uint16 |> Option.defaultValue 8085us
-(*
+
 let generateQRCode () =
-    let qrCode = QrCode()
-    qrCode
-*)
+    let url = "https://twitter.com/GarethHubball"
+    let qrCode = QrCode(url, Vector2Slim(256, 256), SKEncodedImageFormat.Png)
+    let stream = new MemoryStream()
+    qrCode.GenerateImage(stream)
+    let bytes = stream.ToArray()
+    let b64string = Convert.ToBase64String(bytes)
+    "data:image/png;base64," + b64string
+
 let webApp = router {
     get "/api/init" (fun next ctx ->
         task {
-            let counter = {Value = 42}
+            let counter = {Value = 42; Qr = generateQRCode ()}
             return! json counter next ctx
         })
 }
