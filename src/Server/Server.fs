@@ -21,8 +21,8 @@ let port =
     "SERVER_PORT"
     |> tryGetEnv |> Option.map uint16 |> Option.defaultValue 8085us
 
-let generateQRCode () =
-    let url = "https://twitter.com/GarethHubball"
+let generateQRCode host tournamentcode =
+    let url = host + "/Enter/" + tournamentcode
     let qrCode = QrCode(url, Vector2Slim(256, 256), SKEncodedImageFormat.Png)
     let stream = new MemoryStream()
     qrCode.GenerateImage(stream)
@@ -30,10 +30,12 @@ let generateQRCode () =
     let b64string = Convert.ToBase64String(bytes)
     "data:image/png;base64," + b64string
 
+let tournamentEntryQR = generateQRCode "http://localhost:8080"
+
 let webApp = router {
     get "/api/init" (fun next ctx ->
         task {
-            let counter = {Value = 42; Qr = generateQRCode ()}
+            let counter = {Value = 42; Qr = tournamentEntryQR "SAMPLE" }
             return! json counter next ctx
         })
 }
