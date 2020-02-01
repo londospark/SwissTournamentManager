@@ -21,20 +21,6 @@ let port =
     "SERVER_PORT"
     |> tryGetEnv |> Option.map uint16 |> Option.defaultValue 8085us
 
-let generateQRCode host tournamentcode =
-    let url = host + "/Enter/" + tournamentcode
-    let qrCode = QrCode(url, Vector2Slim(256, 256), SKEncodedImageFormat.Png)
-    use stream = new MemoryStream()
-    qrCode.GenerateImage(stream)
-    stream
-
-let B64Encode (stream: MemoryStream): string =
-    let bytes = stream.ToArray()
-    let b64string = Convert.ToBase64String(bytes)
-    "data:image/png;base64," + b64string
-
-let tournamentEntryQR = generateQRCode "http://localhost:8080"
-
 let tournaments : Tournament list =
     [
         {Name = "BCS London Cardfight Vanguard Premium"; Code = "CFV" }
@@ -55,6 +41,15 @@ let image (x : MemoryStream) : HttpHandler =
     setHttpHeader "Content-Type" "image/png"
     >=> setBody (x.ToArray())
 
+let generateQRCode host tournamentcode =
+    let url = host + "/Enter/" + tournamentcode
+    let qrCode = QrCode(url, Vector2Slim(256, 256), SKEncodedImageFormat.Png)
+    use stream = new MemoryStream()
+    qrCode.GenerateImage(stream)
+    stream
+
+let tournamentEntryQR code = image (generateQRCode "http://localhost:8080" code)
+
 let apiApp = router {
     get "/init" (fun next ctx ->
         task {
@@ -62,10 +57,7 @@ let apiApp = router {
             return! json model next ctx
         })
     forward "/tournaments" tournamentController
-    getf "/qrcode/%s" ( fun code ->
-        (fun next ctx ->
-            image (tournamentEntryQR code) next ctx
-        ))
+    getf "/qrcode/%s" tournamentEntryQR
 }
 
 let webApp = router {
