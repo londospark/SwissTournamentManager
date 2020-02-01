@@ -15,16 +15,17 @@ open Shared
 // in this case, we are keeping track of a counter
 // we mark it as optional, because initially it will not be available from the client
 // the initial value will be requested from server
-type Model = { Counter: Counter option }
+type Model = { Counter: PageModel option }
 
 // The Msg type defines what events/actions can occur while the application is running
 // the state of the application changes *only* in reaction to these events
 type Msg =
     | Increment
     | Decrement
-    | InitialCountLoaded of Counter
+    | InitialCountLoaded of PageModel
+    | GetBuddyfight
 
-let initialCounter () = Fetch.fetchAs<Counter> "/api/init"
+let initialCounter () = Fetch.fetchAs<PageModel> "/api/init"
 
 // defines the initial state and initial command (= side-effect) of the application
 let init () : Model * Cmd<Msg> =
@@ -46,6 +47,9 @@ let update (msg : Msg) (currentModel : Model) : Model * Cmd<Msg> =
         nextModel, Cmd.none
     | _, InitialCountLoaded initialCount->
         let nextModel = { Counter = Some initialCount }
+        nextModel, Cmd.none
+    | Some counter, GetBuddyfight ->
+        let nextModel = { currentModel with Counter = Some { currentModel.Counter.Value with Tournament = None } }
         nextModel, Cmd.none
     | _ -> currentModel, Cmd.none
 
@@ -101,7 +105,10 @@ let view (model : Model) (dispatch : Msg -> unit) =
                 Columns.columns []
                     [ Column.column [] [ button "-" (fun _ -> dispatch Decrement) ]
                       Column.column [] [ button "+" (fun _ -> dispatch Increment) ] ]
-                img [ Src (qr model) ] ]
+                img [ Src (qr model) ]
+                Columns.columns [] [
+                     Column.column [] [ str (model.Counter |> Option.bind (fun c -> c.Tournament) |> Option.defaultValue {Name =  ""; Code = ""} |> (fun t -> t.Name) ) ]
+                     Column.column [] [ button "BCS Buddyfight" (fun _ -> dispatch GetBuddyfight) ] ] ]
 
           Footer.footer [ ]
                 [ Content.content [ Content.Modifiers [ Modifier.TextAlignment (Screen.All, TextAlignment.Centered) ] ]
