@@ -15,7 +15,8 @@ open Shared
 // in this case, we are keeping track of a counter
 // we mark it as optional, because initially it will not be available from the client
 // the initial value will be requested from server
-type State = { PageModel: ApplicationState option }
+type State =
+    { PageModel: ApplicationState option }
 
 // The Msg type defines what events/actions can occur while the application is running
 // the state of the application changes *only* in reaction to these events
@@ -24,13 +25,10 @@ type Msg =
     | FetchTournaments
     | TournamentListReceived of Tournament list
 
-let initialPage () = Fetch.fetchAs<ApplicationState> "/api/init"
+let initialPage() = Fetch.fetchAs<ApplicationState> "/api/init"
 
-let fetchTournamentsCommand : Cmd<Msg> =
-    Cmd.OfPromise.perform
-        (fun () -> Fetch.fetchAs<Tournament list> "/api/tournaments")
-        ()
-        TournamentListReceived
+let fetchTournamentsCommand: Cmd<Msg> =
+    Cmd.OfPromise.perform (fun () -> Fetch.fetchAs<Tournament list> "/api/tournaments") () TournamentListReceived
 
 let tournaments (state: State) =
     match state.PageModel with
@@ -38,84 +36,50 @@ let tournaments (state: State) =
     | _ -> []
 
 // defines the initial state and initial command (= side-effect) of the application
-let init () : State * Cmd<Msg> =
+let init(): State * Cmd<Msg> =
     let initialModel = { PageModel = None }
-    let loadCountCmd =
-        Cmd.OfPromise.perform initialPage () InitialModelLoaded
+    let loadCountCmd = Cmd.OfPromise.perform initialPage () InitialModelLoaded
     initialModel, loadCountCmd
 
 // The update function computes the next state of the application based on the current state and the incoming events/messages
 // It can also run side-effects (encoded as commands) like calling the server via Http.
 // these commands in turn, can dispatch messages to which the update function will react.
-let update (msg : Msg) (currentModel : State) : State * Cmd<Msg> =
+let update (msg: Msg) (currentModel: State): State * Cmd<Msg> =
     match currentModel.PageModel, msg with
-    | _, InitialModelLoaded initialCount->
-        let nextModel = { PageModel = Some initialCount }
+    | _, InitialModelLoaded initialState ->
+        let nextModel = { PageModel = Some initialState }
         nextModel, Cmd.none
-    | _, FetchTournaments ->
-        currentModel, fetchTournamentsCommand
+    | _, FetchTournaments -> currentModel, fetchTournamentsCommand
     | Some state, TournamentListReceived tournaments ->
-        let nextModel = { currentModel with PageModel = Some { state with Tournaments = tournaments }}
+        let nextModel = { currentModel with PageModel = Some { state with Tournaments = tournaments } }
         nextModel, Cmd.none
     | _ -> currentModel, Cmd.none
 
 
-let safeComponents =
-    let components =
-        span [ ]
-           [ a [ Href "https://github.com/SAFE-Stack/SAFE-template" ]
-               [ str "SAFE  "
-                 str Version.template ]
-             str ", "
-             a [ Href "https://saturnframework.github.io" ] [ str "Saturn" ]
-             str ", "
-             a [ Href "http://fable.io" ] [ str "Fable" ]
-             str ", "
-             a [ Href "https://elmish.github.io" ] [ str "Elmish" ]
-             str ", "
-             a [ Href "https://fulma.github.io/Fulma" ] [ str "Fulma" ]
-
-           ]
-
-    span [ ]
-        [ str "Version "
-          strong [ ] [ str Version.app ]
-          str " powered by: "
-          components ]
-
-
-let qrcode (tournament: Tournament) = img [ Src ( "/api/qrcode/" + tournament.Code) ]
+let qrcode (tournament: Tournament) = img [ Src("/api/qrcode/" + tournament.Code) ]
 
 let button txt onClick =
     Button.button
         [ Button.IsFullWidth
           Button.Color IsPrimary
-          Button.OnClick onClick ]
-        [ str txt ]
+          Button.OnClick onClick ] [ str txt ]
 
-let view (model : State) (dispatch : Msg -> unit) =
+let view (model: State) (dispatch: Msg -> unit) =
     div []
         [ Navbar.navbar [ Navbar.Color IsPrimary ]
-            [ Navbar.Item.div [ ]
-                [ Heading.h2 [ ]
-                    [ str "Swiss Tournament Manager" ] ] ]
+              [ Navbar.Item.div [] [ Heading.h2 [] [ str "Swiss Tournament Manager" ] ] ]
+
+          Container.container [] [ button "Fetch Tournaments" (fun _ -> dispatch FetchTournaments) ]
 
           Container.container []
-              [ button "Fetch Tournaments" (fun _ -> dispatch FetchTournaments) ]
-
-          Container.container
-            []
-            [ table [] [
-              yield tr [] [
-                th [] [str "Name"]
-                th [] [str "QR"] ]
-              for t in tournaments model ->
-                tr [] [ td [] [ str t.Name ]; td [] [ qrcode t ]]
-            ]]
-
-          Footer.footer [ ]
-                [ Content.content [ Content.Modifiers [ Modifier.TextAlignment (Screen.All, TextAlignment.Centered) ] ]
-                    [ safeComponents ] ] ]
+              [ table []
+                    [ yield tr []
+                                [ th [] [ str "Name" ]
+                                  th [] [ str "QR" ] ]
+                      for t in tournaments model ->
+                          tr []
+                              [ td [] [ str t.Name ]
+                                td [] [ qrcode t ] ] ] ] ]
 
 #if DEBUG
 open Elmish.Debug
