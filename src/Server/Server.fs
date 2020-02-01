@@ -51,7 +51,7 @@ let tournamentController = controller {
 let webApp = router {
     get "/api/init" (fun next ctx ->
         task {
-            let model = {Value = 42; Qr = tournamentEntryQR "SAMPLE"; Tournament = Some (tournaments |> List.head) }
+            let model = {Qr = tournamentEntryQR "SAMPLE"; Tournament = Some (tournaments |> List.head) }
             return! json model next ctx
         })
     forward "/api/tournaments" tournamentController

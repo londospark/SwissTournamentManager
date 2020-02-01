@@ -20,8 +20,6 @@ type Model = { Counter: PageModel option }
 // The Msg type defines what events/actions can occur while the application is running
 // the state of the application changes *only* in reaction to these events
 type Msg =
-    | Increment
-    | Decrement
     | InitialCountLoaded of PageModel
     | FetchTournaments
     | TournamentListReceived of Tournament list
@@ -47,12 +45,6 @@ let init () : Model * Cmd<Msg> =
 // these commands in turn, can dispatch messages to which the update function will react.
 let update (msg : Msg) (currentModel : Model) : Model * Cmd<Msg> =
     match currentModel.Counter, msg with
-    | Some counter, Increment ->
-        let nextModel = { currentModel with Counter = Some { counter with Value = counter.Value + 1 } }
-        nextModel, Cmd.none
-    | Some counter, Decrement ->
-        let nextModel = { currentModel with Counter = Some { counter with Value = counter.Value - 1 } }
-        nextModel, Cmd.none
     | _, InitialCountLoaded initialCount->
         let nextModel = { Counter = Some initialCount }
         nextModel, Cmd.none
@@ -87,10 +79,6 @@ let safeComponents =
           str " powered by: "
           components ]
 
-let show = function
-    | { Counter = Some counter } -> string counter.Value
-    | { Counter = None   } -> "Loading..."
-
 let qr = function
     | { Counter = Some counter } -> counter.Qr
     | { Counter = None   } -> "https://netflixroulette.files.wordpress.com/2013/01/image-not-found.gif"
@@ -110,12 +98,7 @@ let view (model : Model) (dispatch : Msg -> unit) =
                     [ str "SAFE Template" ] ] ]
 
           Container.container []
-              [ Content.content [ Content.Modifiers [ Modifier.TextAlignment (Screen.All, TextAlignment.Centered) ] ]
-                    [ Heading.h3 [] [ str ("Press buttons to manipulate counter: " + show model) ] ]
-                Columns.columns []
-                    [ Column.column [] [ button "-" (fun _ -> dispatch Decrement) ]
-                      Column.column [] [ button "+" (fun _ -> dispatch Increment) ] ]
-                img [ Src (qr model) ]
+              [ img [ Src (qr model) ]
                 Columns.columns [] [
                      Column.column [] [ str (model.Counter |> Option.bind (fun c -> c.Tournament) |> Option.defaultValue {Name =  ""; Code = ""} |> (fun t -> t.Name) ) ]
                      Column.column [] [ button "Fetch Tournaments" (fun _ -> dispatch FetchTournaments) ] ] ]
