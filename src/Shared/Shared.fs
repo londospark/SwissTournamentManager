@@ -1,5 +1,5 @@
 namespace Shared
 
-type Tournament = { Name: string; Code: string; QrCode: string }
+type Tournament = { Name: string; Code: string }
 type ApplicationState = { Tournaments: Tournament list }
 

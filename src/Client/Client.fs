@@ -84,7 +84,7 @@ let safeComponents =
           components ]
 
 
-let qrcode (tournament: Tournament) = img [ Src (tournament.QrCode) ]
+let qrcode (tournament: Tournament) = img [ Src ( "/api/qrcode/" + tournament.Code) ]
 
 let button txt onClick =
     Button.button
