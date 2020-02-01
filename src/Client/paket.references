@@ -7,4 +7,5 @@ group Client
     Thoth.Fetch
     Fulma
     Fable.FontAwesome.Free
+    Feliz.Router
 

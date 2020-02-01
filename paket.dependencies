@@ -22,6 +22,7 @@ group Client
     nuget Fable.Elmish.Debugger ~> 3
     nuget Fable.Elmish.HMR ~> 4
     nuget Fable.Elmish.React ~> 3
+    nuget Feliz.Router
     nuget Thoth.Fetch ~> 1
     nuget Fable.React ~> 5
     nuget Fulma ~> 2

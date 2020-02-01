@@ -42,7 +42,7 @@ let image (x : MemoryStream) : HttpHandler =
     >=> setBody (x.ToArray())
 
 let generateQRCode host tournamentcode =
-    let url = host + "/Enter/" + tournamentcode
+    let url = host + "/#Enter/" + tournamentcode
     let qrCode = QrCode(url, Vector2Slim(256, 256), SKEncodedImageFormat.Png)
     use stream = new MemoryStream()
     qrCode.GenerateImage(stream)

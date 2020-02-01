@@ -9,6 +9,9 @@ open Thoth.Fetch
 open Fulma
 open Thoth.Json
 
+open Feliz
+open Feliz.Router
+
 open Shared
 
 // The model holds data that you want to keep track of while the application is running
@@ -16,7 +19,10 @@ open Shared
 // we mark it as optional, because initially it will not be available from the client
 // the initial value will be requested from server
 type State =
-    { PageModel: ApplicationState option }
+    {
+        PageModel: ApplicationState option
+        CurrentUrl: string list
+    }
 
 // The Msg type defines what events/actions can occur while the application is running
 // the state of the application changes *only* in reaction to these events
@@ -24,6 +30,7 @@ type Msg =
     | InitialModelLoaded of ApplicationState
     | FetchTournaments
     | TournamentListReceived of Tournament list
+    | UrlChanged of string list
 
 let initialPage() = Fetch.fetchAs<ApplicationState> "/api/init"
 
@@ -37,7 +44,7 @@ let tournaments (state: State) =
 
 // defines the initial state and initial command (= side-effect) of the application
 let init(): State * Cmd<Msg> =
-    let initialModel = { PageModel = None }
+    let initialModel = { PageModel = None; CurrentUrl = Router.currentUrl() }
     let loadCountCmd = Cmd.OfPromise.perform initialPage () InitialModelLoaded
     initialModel, loadCountCmd
 
@@ -47,11 +54,14 @@ let init(): State * Cmd<Msg> =
 let update (msg: Msg) (currentModel: State): State * Cmd<Msg> =
     match currentModel.PageModel, msg with
     | _, InitialModelLoaded initialState ->
-        let nextModel = { PageModel = Some initialState }
+        let nextModel = { currentModel with PageModel = Some initialState }
         nextModel, Cmd.none
     | _, FetchTournaments -> currentModel, fetchTournamentsCommand
     | Some state, TournamentListReceived tournaments ->
         let nextModel = { currentModel with PageModel = Some { state with Tournaments = tournaments } }
+        nextModel, Cmd.none
+    | _, UrlChanged segments ->
+        let nextModel = { currentModel with CurrentUrl = segments }
         nextModel, Cmd.none
     | _ -> currentModel, Cmd.none
 
@@ -64,7 +74,7 @@ let button txt onClick =
           Button.Color IsPrimary
           Button.OnClick onClick ] [ str txt ]
 
-let view (model: State) (dispatch: Msg -> unit) =
+let listPage (model: State) (dispatch: Msg -> unit) =
     div []
         [ Navbar.navbar [ Navbar.Color IsPrimary ]
               [ Navbar.Item.div [] [ Heading.h2 [] [ str "Swiss Tournament Manager" ] ] ]
@@ -80,6 +90,17 @@ let view (model: State) (dispatch: Msg -> unit) =
                           tr []
                               [ td [] [ str t.Name ]
                                 td [] [ qrcode t ] ] ] ] ]
+
+let view (state: State) (dispatch: Msg -> unit) =
+    let currentPage =
+        match state.CurrentUrl with
+        | [] -> listPage state dispatch
+        | x -> div [] [ str (sprintf "%A" x) ]
+
+    Router.router [
+        Router.onUrlChanged (UrlChanged >> dispatch)
+        Router.application currentPage
+    ]
 
 #if DEBUG
 open Elmish.Debug
