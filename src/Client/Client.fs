@@ -105,8 +105,13 @@ let view (model : State) (dispatch : Msg -> unit) =
 
           Container.container
             []
-            (tournaments model
-            |> List.map (fun t -> str t.Name ))
+            [ table [] [
+              yield tr [] [
+                th [] [str "Name"]
+                th [] [str "QR"] ]
+              for t in tournaments model ->
+                tr [] [ td [] [ str t.Name ]; td [] [ qrcode t ]]
+            ]]
 
           Footer.footer [ ]
                 [ Content.content [ Content.Modifiers [ Modifier.TextAlignment (Screen.All, TextAlignment.Centered) ] ]
