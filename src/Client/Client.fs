@@ -15,16 +15,16 @@ open Shared
 // in this case, we are keeping track of a counter
 // we mark it as optional, because initially it will not be available from the client
 // the initial value will be requested from server
-type Model = { Counter: PageModel option }
+type State = { PageModel: ApplicationState option }
 
 // The Msg type defines what events/actions can occur while the application is running
 // the state of the application changes *only* in reaction to these events
 type Msg =
-    | InitialCountLoaded of PageModel
+    | InitialModelLoaded of ApplicationState
     | FetchTournaments
     | TournamentListReceived of Tournament list
 
-let initialCounter () = Fetch.fetchAs<PageModel> "/api/init"
+let initialPage () = Fetch.fetchAs<ApplicationState> "/api/init"
 
 let fetchTournamentsCommand : Cmd<Msg> =
     Cmd.OfPromise.perform
@@ -32,26 +32,30 @@ let fetchTournamentsCommand : Cmd<Msg> =
         ()
         TournamentListReceived
 
+let tournaments (state: State) =
+    match state.PageModel with
+    | Some appState -> appState.Tournaments
+    | _ -> []
 
 // defines the initial state and initial command (= side-effect) of the application
-let init () : Model * Cmd<Msg> =
-    let initialModel = { Counter = None }
+let init () : State * Cmd<Msg> =
+    let initialModel = { PageModel = None }
     let loadCountCmd =
-        Cmd.OfPromise.perform initialCounter () InitialCountLoaded
+        Cmd.OfPromise.perform initialPage () InitialModelLoaded
     initialModel, loadCountCmd
 
 // The update function computes the next state of the application based on the current state and the incoming events/messages
 // It can also run side-effects (encoded as commands) like calling the server via Http.
 // these commands in turn, can dispatch messages to which the update function will react.
-let update (msg : Msg) (currentModel : Model) : Model * Cmd<Msg> =
-    match currentModel.Counter, msg with
-    | _, InitialCountLoaded initialCount->
-        let nextModel = { Counter = Some initialCount }
+let update (msg : Msg) (currentModel : State) : State * Cmd<Msg> =
+    match currentModel.PageModel, msg with
+    | _, InitialModelLoaded initialCount->
+        let nextModel = { PageModel = Some initialCount }
         nextModel, Cmd.none
     | _, FetchTournaments ->
         currentModel, fetchTournamentsCommand
-    | Some counter, TournamentListReceived tournaments ->
-        let nextModel = { currentModel with Counter = Some { counter with Tournament = Some tournaments.[1] }}
+    | Some state, TournamentListReceived tournaments ->
+        let nextModel = { currentModel with PageModel = Some { state with Tournaments = tournaments }}
         nextModel, Cmd.none
     | _ -> currentModel, Cmd.none
 
@@ -79,9 +83,8 @@ let safeComponents =
           str " powered by: "
           components ]
 
-let qr = function
-    | { Counter = Some counter } -> counter.Qr
-    | { Counter = None   } -> "https://netflixroulette.files.wordpress.com/2013/01/image-not-found.gif"
+
+let qrcode (tournament: Tournament) = img [ Src (tournament.QrCode) ]
 
 let button txt onClick =
     Button.button
@@ -90,18 +93,20 @@ let button txt onClick =
           Button.OnClick onClick ]
         [ str txt ]
 
-let view (model : Model) (dispatch : Msg -> unit) =
+let view (model : State) (dispatch : Msg -> unit) =
     div []
         [ Navbar.navbar [ Navbar.Color IsPrimary ]
             [ Navbar.Item.div [ ]
                 [ Heading.h2 [ ]
-                    [ str "SAFE Template" ] ] ]
+                    [ str "Swiss Tournament Manager" ] ] ]
 
           Container.container []
-              [ img [ Src (qr model) ]
-                Columns.columns [] [
-                     Column.column [] [ str (model.Counter |> Option.bind (fun c -> c.Tournament) |> Option.defaultValue {Name =  ""; Code = ""} |> (fun t -> t.Name) ) ]
-                     Column.column [] [ button "Fetch Tournaments" (fun _ -> dispatch FetchTournaments) ] ] ]
+              [ button "Fetch Tournaments" (fun _ -> dispatch FetchTournaments) ]
+
+          Container.container
+            []
+            (tournaments model
+            |> List.map (fun t -> str t.Name ))
 
           Footer.footer [ ]
                 [ Content.content [ Content.Modifiers [ Modifier.TextAlignment (Screen.All, TextAlignment.Centered) ] ]
