@@ -23,9 +23,17 @@ type Msg =
     | Increment
     | Decrement
     | InitialCountLoaded of PageModel
-    | GetBuddyfight
+    | FetchTournaments
+    | TournamentListReceived of Tournament list
 
 let initialCounter () = Fetch.fetchAs<PageModel> "/api/init"
+
+let fetchTournamentsCommand : Cmd<Msg> =
+    Cmd.OfPromise.perform
+        (fun () -> Fetch.fetchAs<Tournament list> "/api/tournaments")
+        ()
+        TournamentListReceived
+
 
 // defines the initial state and initial command (= side-effect) of the application
 let init () : Model * Cmd<Msg> =
@@ -48,8 +56,10 @@ let update (msg : Msg) (currentModel : Model) : Model * Cmd<Msg> =
     | _, InitialCountLoaded initialCount->
         let nextModel = { Counter = Some initialCount }
         nextModel, Cmd.none
-    | Some counter, GetBuddyfight ->
-        let nextModel = { currentModel with Counter = Some { currentModel.Counter.Value with Tournament = None } }
+    | _, FetchTournaments ->
+        currentModel, fetchTournamentsCommand
+    | Some counter, TournamentListReceived tournaments ->
+        let nextModel = { currentModel with Counter = Some { counter with Tournament = Some tournaments.[1] }}
         nextModel, Cmd.none
     | _ -> currentModel, Cmd.none
 
@@ -108,7 +118,7 @@ let view (model : Model) (dispatch : Msg -> unit) =
                 img [ Src (qr model) ]
                 Columns.columns [] [
                      Column.column [] [ str (model.Counter |> Option.bind (fun c -> c.Tournament) |> Option.defaultValue {Name =  ""; Code = ""} |> (fun t -> t.Name) ) ]
-                     Column.column [] [ button "BCS Buddyfight" (fun _ -> dispatch GetBuddyfight) ] ] ]
+                     Column.column [] [ button "Fetch Tournaments" (fun _ -> dispatch FetchTournaments) ] ] ]
 
           Footer.footer [ ]
                 [ Content.content [ Content.Modifiers [ Modifier.TextAlignment (Screen.All, TextAlignment.Centered) ] ]

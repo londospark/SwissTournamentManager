@@ -32,7 +32,6 @@ let generateQRCode host tournamentcode =
 
 let tournamentEntryQR = generateQRCode "http://localhost:8080"
 
-
 let tournaments : Tournament list =
     [
         {Name = "BCS London Cardfight Vanguard Premium"; Code = "CFV"}
@@ -55,7 +54,7 @@ let webApp = router {
             let model = {Value = 42; Qr = tournamentEntryQR "SAMPLE"; Tournament = Some (tournaments |> List.head) }
             return! json model next ctx
         })
-    forward "/tournaments" tournamentController
+    forward "/api/tournaments" tournamentController
 }
 
 let app = application {
