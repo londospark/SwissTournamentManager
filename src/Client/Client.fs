@@ -19,10 +19,8 @@ open Shared
 // we mark it as optional, because initially it will not be available from the client
 // the initial value will be requested from server
 type State =
-    {
-        PageModel: ApplicationState option
-        CurrentUrl: string list
-    }
+    { PageModel: ApplicationState option
+      CurrentUrl: string list }
 
 // The Msg type defines what events/actions can occur while the application is running
 // the state of the application changes *only* in reaction to these events
@@ -44,7 +42,10 @@ let tournaments (state: State) =
 
 // defines the initial state and initial command (= side-effect) of the application
 let init(): State * Cmd<Msg> =
-    let initialModel = { PageModel = None; CurrentUrl = Router.currentUrl() }
+    let initialModel =
+        { PageModel = None
+          CurrentUrl = Router.currentUrl() }
+
     let loadCountCmd = Cmd.OfPromise.perform initialPage () InitialModelLoaded
     initialModel, loadCountCmd
 
@@ -65,6 +66,12 @@ let update (msg: Msg) (currentModel: State): State * Cmd<Msg> =
         nextModel, Cmd.none
     | _ -> currentModel, Cmd.none
 
+let pageHeader =
+    Navbar.navbar [ Navbar.Color IsInfo ]
+        [ Navbar.Brand.div []
+              [ Navbar.Link.a
+                  [ Navbar.Link.IsArrowless
+                    Navbar.Link.Props [ Href "#" ] ] [ str "Swiss Tournament Manager" ] ] ]
 
 let qrcode (tournament: Tournament) = img [ Src("/api/qrcode/" + tournament.Code) ]
 
@@ -76,9 +83,7 @@ let button txt onClick =
 
 let listPage (state: State) (dispatch: Msg -> unit) =
     div []
-        [ Navbar.navbar [ Navbar.Color IsPrimary ]
-              [ Navbar.Item.div [] [ Heading.h2 [] [ str "Swiss Tournament Manager" ] ] ]
-
+        [ pageHeader
           Container.container [] [ button "Fetch Tournaments" (fun _ -> dispatch FetchTournaments) ]
 
           Container.container []
@@ -92,19 +97,20 @@ let listPage (state: State) (dispatch: Msg -> unit) =
                                 td [] [ qrcode t ] ] ] ] ]
 
 let enter (code: string) (state: State) (dispatch: Msg -> unit) =
-    div [] [ str (sprintf "Entering tournament %s" code)]
+    div []
+        [ pageHeader
+          str (sprintf "Entering tournament %s" code) ]
 
 let view (state: State) (dispatch: Msg -> unit) =
     let currentPage =
         match state.CurrentUrl with
         | [] -> listPage state dispatch
-        | ["Enter"; code] -> enter code state dispatch
+        | [ "Enter"; code ] -> enter code state dispatch
         | x -> div [] [ str (sprintf "%A" x) ]
 
-    Router.router [
-        Router.onUrlChanged (UrlChanged >> dispatch)
-        Router.application currentPage
-    ]
+    Router.router
+        [ Router.onUrlChanged (UrlChanged >> dispatch)
+          Router.application currentPage ]
 
 #if DEBUG
 open Elmish.Debug
