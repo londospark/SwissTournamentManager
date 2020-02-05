@@ -66,12 +66,14 @@ let update (msg: Msg) (currentModel: State): State * Cmd<Msg> =
         nextModel, Cmd.none
     | _ -> currentModel, Cmd.none
 
-let pageHeader =
-    Navbar.navbar [ Navbar.Color IsInfo ]
-        [ Navbar.Brand.div []
-              [ Navbar.Link.a
-                  [ Navbar.Link.IsArrowless
-                    Navbar.Link.Props [ Href "#" ] ] [ str "Swiss Tournament Manager" ] ] ]
+let mainLayout (body: ReactElement list): ReactElement =
+    div []
+        [ Navbar.navbar [ Navbar.Color IsInfo ]
+              [ Navbar.Brand.div []
+                    [ Navbar.Link.a
+                        [ Navbar.Link.IsArrowless
+                          Navbar.Link.Props [ Href "#" ] ] [ str "Swiss Tournament Manager" ] ] ]
+          yield! body ]
 
 let qrcode (tournament: Tournament) = img [ Src("/api/qrcode/" + tournament.Code) ]
 
@@ -82,9 +84,8 @@ let button txt onClick =
           Button.OnClick onClick ] [ str txt ]
 
 let listPage (state: State) (dispatch: Msg -> unit) =
-    div []
-        [ pageHeader
-          Container.container [] [ button "Fetch Tournaments" (fun _ -> dispatch FetchTournaments) ]
+    mainLayout
+        [ Container.container [] [ button "Fetch Tournaments" (fun _ -> dispatch FetchTournaments) ]
 
           Container.container []
               [ table []
@@ -97,9 +98,7 @@ let listPage (state: State) (dispatch: Msg -> unit) =
                                 td [] [ qrcode t ] ] ] ] ]
 
 let enter (code: string) (state: State) (dispatch: Msg -> unit) =
-    div []
-        [ pageHeader
-          str (sprintf "Entering tournament %s" code) ]
+    mainLayout [ str (sprintf "Entering tournament %s" code) ]
 
 let view (state: State) (dispatch: Msg -> unit) =
     let currentPage =
