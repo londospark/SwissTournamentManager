@@ -88,7 +88,7 @@ let listPage (state: State) (dispatch: Msg -> unit) =
         [ Container.container [] [ button "Fetch Tournaments" (fun _ -> dispatch FetchTournaments) ]
 
           Container.container []
-              [ table []
+              [ Table.table []
                     [ yield tr []
                                 [ th [] [ str "Name" ]
                                   th [] [ str "QR" ] ]
