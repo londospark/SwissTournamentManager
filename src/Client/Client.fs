@@ -98,7 +98,13 @@ let listPage (state: State) (dispatch: Msg -> unit) =
                                 td [] [ qrcode t ] ] ] ] ]
 
 let enter (code: string) (state: State) (dispatch: Msg -> unit) =
-    mainLayout [ str (sprintf "Entering tournament %s" code) ]
+    mainLayout
+        [ Container.container [] [
+          Heading.h2 [ Heading.IsSubtitle ] [ str (sprintf "Entering tournament: %s" code) ]
+          form []
+              [ Field.div []
+                    [ Label.label [] [ str "Name" ]
+                      Control.div [] [ Input.text [ Input.Placeholder "For use in this tournament only." ] ] ] ] ] ]
 
 let view (state: State) (dispatch: Msg -> unit) =
     let currentPage =
