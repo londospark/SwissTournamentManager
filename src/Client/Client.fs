@@ -74,7 +74,7 @@ let button txt onClick =
           Button.Color IsPrimary
           Button.OnClick onClick ] [ str txt ]
 
-let listPage (model: State) (dispatch: Msg -> unit) =
+let listPage (state: State) (dispatch: Msg -> unit) =
     div []
         [ Navbar.navbar [ Navbar.Color IsPrimary ]
               [ Navbar.Item.div [] [ Heading.h2 [] [ str "Swiss Tournament Manager" ] ] ]
@@ -86,15 +86,19 @@ let listPage (model: State) (dispatch: Msg -> unit) =
                     [ yield tr []
                                 [ th [] [ str "Name" ]
                                   th [] [ str "QR" ] ]
-                      for t in tournaments model ->
+                      for t in tournaments state ->
                           tr []
                               [ td [] [ str t.Name ]
                                 td [] [ qrcode t ] ] ] ] ]
+
+let enter (code: string) (state: State) (dispatch: Msg -> unit) =
+    div [] [ str (sprintf "Entering tournament %s" code)]
 
 let view (state: State) (dispatch: Msg -> unit) =
     let currentPage =
         match state.CurrentUrl with
         | [] -> listPage state dispatch
+        | ["Enter"; code] -> enter code state dispatch
         | x -> div [] [ str (sprintf "%A" x) ]
 
     Router.router [
