@@ -76,6 +76,7 @@ let mainLayout (body: ReactElement list): ReactElement =
           yield! body ]
 
 let qrcode (tournament: Tournament) = img [ Src("/api/qrcode/" + tournament.Code) ]
+let link (tournament: Tournament) = a [Href ("/#Enter/" + tournament.Code) ] [ str ("/#Enter/" + tournament.Code) ]
 
 let button txt onClick =
     Button.button
@@ -92,12 +93,14 @@ let listPage (state: State) (dispatch: Msg -> unit) =
                     [ thead []
                           [ yield tr []
                                       [ th [] [ str "Name" ]
-                                        th [] [ str "QR" ] ] ]
+                                        th [] [ str "QR" ]
+                                        th [] [ str "Entry Link" ] ] ]
                       tbody []
                           [ for t in tournaments state ->
                               tr []
                                   [ td [] [ str t.Name ]
-                                    td [] [ qrcode t ] ] ] ] ] ]
+                                    td [] [ qrcode t ]
+                                    td [] [ link t ] ] ] ] ] ]
 
 let enter (code: string) (state: State) (dispatch: Msg -> unit) =
     mainLayout
