@@ -89,22 +89,24 @@ let listPage (state: State) (dispatch: Msg -> unit) =
 
           Container.container []
               [ Table.table []
-                    [ yield tr []
-                                [ th [] [ str "Name" ]
-                                  th [] [ str "QR" ] ]
-                      for t in tournaments state ->
-                          tr []
-                              [ td [] [ str t.Name ]
-                                td [] [ qrcode t ] ] ] ] ]
+                    [ thead []
+                          [ yield tr []
+                                      [ th [] [ str "Name" ]
+                                        th [] [ str "QR" ] ] ]
+                      tbody []
+                          [ for t in tournaments state ->
+                              tr []
+                                  [ td [] [ str t.Name ]
+                                    td [] [ qrcode t ] ] ] ] ] ]
 
 let enter (code: string) (state: State) (dispatch: Msg -> unit) =
     mainLayout
-        [ Container.container [] [
-          Heading.h2 [ Heading.IsSubtitle ] [ str (sprintf "Entering tournament: %s" code) ]
-          form []
-              [ Field.div []
-                    [ Label.label [] [ str "Name" ]
-                      Control.div [] [ Input.text [ Input.Placeholder "For use in this tournament only." ] ] ] ] ] ]
+        [ Container.container []
+              [ Heading.h2 [ Heading.IsSubtitle ] [ str (sprintf "Entering tournament: %s" code) ]
+                form []
+                    [ Field.div []
+                          [ Label.label [] [ str "Name" ]
+                            Control.div [] [ Input.text [ Input.Placeholder "For use in this tournament only." ] ] ] ] ] ]
 
 let view (state: State) (dispatch: Msg -> unit) =
     let currentPage =
