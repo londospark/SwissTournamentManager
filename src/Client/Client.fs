@@ -84,6 +84,13 @@ let button txt onClick =
           Button.OnClick onClick ] [ str txt ]
 
 let listPage (state: State) (dispatch: Msg -> unit) =
+    let tournamentRow (t: Tournament): ReactElement =
+        tr []
+            [ td [] [ str t.Name ]
+              td [] [ qrcode t ] ]
+
+    let rows = tournaments >> Seq.map tournamentRow
+
     mainLayout
         [ Container.container [] [ button "Fetch Tournaments" (fun _ -> dispatch FetchTournaments) ]
 
@@ -93,11 +100,7 @@ let listPage (state: State) (dispatch: Msg -> unit) =
                           [ yield tr []
                                       [ th [] [ str "Name" ]
                                         th [] [ str "QR" ] ] ]
-                      tbody []
-                          [ for t in tournaments state ->
-                              tr []
-                                  [ td [] [ str t.Name ]
-                                    td [] [ qrcode t ] ] ] ] ] ]
+                      tbody [] (state |> rows) ] ] ]
 
 let enter (code: string) (state: State) (dispatch: Msg -> unit) =
     mainLayout
