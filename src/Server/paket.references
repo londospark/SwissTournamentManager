@@ -3,3 +3,4 @@ group Server
     Saturn
     Thoth.Json.Giraffe
     SkiaSharp.QrCode
+    SkiaSharp.NativeAssets.Linux.NoDependencies

@@ -1153,6 +1153,8 @@ NUGET
       Microsoft.Extensions.Caching.Memory (>= 2.2)
       System.Threading.Tasks.Dataflow (>= 4.9)
     SkiaSharp (1.68.1.1)
+    SkiaSharp.NativeAssets.Linux.NoDependencies (1.68.1.1)
+      SkiaSharp (>= 1.68.1.1)
     SkiaSharp.QrCode (0.3.1)
       SkiaSharp (>= 1.68)
     System.Buffers (4.5)

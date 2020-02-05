@@ -32,6 +32,7 @@ let platformTool tool winTool =
             "See https://safe-stack.github.io/docs/quickstart/#install-pre-requisites for more info"
         failwith errorMsg
 
+let paketTool = platformTool "paket" "paket.exe"
 let nodeTool = platformTool "node" "node.exe"
 let yarnTool = platformTool "yarn" "yarn.cmd"
 
@@ -62,6 +63,10 @@ Target.create "Clean" (fun _ ->
     [ deployDir
       clientDeployPath ]
     |> Shell.cleanDirs
+)
+
+Target.create "PaketInstall" (fun _ ->
+    runTool paketTool "install" __SOURCE_DIRECTORY__
 )
 
 Target.create "InstallClient" (fun _ ->
@@ -108,6 +113,29 @@ Target.create "Run" (fun _ ->
     |> ignore
 )
 
+let buildDocker tag =
+    let args = sprintf "build -t %s ." tag
+    runTool "docker" args __SOURCE_DIRECTORY__
+
+Target.create "Bundle" (fun _ ->
+    let serverDir = Path.combine deployDir "Server"
+    let clientDir = Path.combine deployDir "Client"
+    let publicDir = Path.combine clientDir "public"
+
+    let publishArgs = sprintf "publish -c Release -r debian.10-x64 -o \"%s\"" serverDir
+    runDotNet publishArgs serverPath
+
+    Shell.copyDir publicDir clientDeployPath FileFilter.allFiles
+)
+
+let dockerUser = "garethhubball"
+let dockerImageName = "swiss-tournament"
+let dockerFullName = sprintf "%s/%s" dockerUser dockerImageName
+
+Target.create "Docker" (fun _ ->
+    buildDocker dockerFullName
+)
+
 
 
 
@@ -116,11 +144,15 @@ Target.create "Run" (fun _ ->
 open Fake.Core.TargetOperators
 
 "Clean"
+    ==> "PaketInstall"
     ==> "InstallClient"
     ==> "Build"
+    ==> "Bundle"
+    ==> "Docker"
 
 
 "Clean"
+    ==> "PaketInstall"
     ==> "InstallClient"
     ==> "Run"
 

@@ -12,7 +12,6 @@ open SkiaSharp
 open SkiaSharp.QrCode.Image
 open System
 
-
 let tryGetEnv = System.Environment.GetEnvironmentVariable >> function null | "" -> None | x -> Some x
 
 let publicPath = Path.GetFullPath "../Client/public"
@@ -41,7 +40,7 @@ let image (x : MemoryStream) : HttpHandler =
     setHttpHeader "Content-Type" "image/png"
     >=> setBody (x.ToArray())
 
-let generateQRCode host tournamentcode =
+let generateQRCode (host: string) (tournamentcode: string) : MemoryStream =
     let url = host + "/#Enter/" + tournamentcode
     let qrCode = QrCode(url, Vector2Slim(256, 256), SKEncodedImageFormat.Png)
     use stream = new MemoryStream()
