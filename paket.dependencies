@@ -13,6 +13,9 @@ group Server
     nuget Thoth.Json.Giraffe
     nuget SkiaSharp.QrCode
 
+    nuget Dapper
+    nuget Microsoft.Data.Sqlite
+
     clitool dotnet-saturn
 
 group Client
@@ -41,3 +44,13 @@ group Build
     nuget Fake.Core.Target
     nuget Fake.DotNet.Cli
     nuget Fake.IO.FileSystem
+
+group Migrations
+    source https://api.nuget.org/v3/index.json
+    framework: netcoreapp3.1
+    storage: none
+
+    nuget FSharp.Core
+    nuget Simple.Migrations
+
+    nuget Microsoft.Data.Sqlite

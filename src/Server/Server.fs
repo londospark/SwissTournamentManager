@@ -8,6 +8,8 @@ open Giraffe
 open Saturn
 open Shared
 
+open Config
+
 open SkiaSharp
 open SkiaSharp.QrCode.Image
 open System
@@ -55,7 +57,8 @@ let apiApp = router {
             let model : ApplicationState = { Tournaments = [] }
             return! json model next ctx
         })
-    forward "/tournaments" tournamentController
+    forward "/tournaments" Tournaments.Controller.resource
+    //forward "/tournaments" tournamentController
     getf "/qrcode/%s" tournamentEntryQR
 }
 
@@ -68,8 +71,9 @@ let app = application {
     use_router webApp
     memory_cache
     use_static publicPath
-    use_json_serializer(Thoth.Json.Giraffe.ThothSerializer())
+    // use_json_serializer(Thoth.Json.Giraffe.ThothSerializer()) // TODO(gareth): Why does this not work?
     use_gzip
+    use_config (fun _ -> {connectionString = "DataSource=src/Server/database.sqlite"} )
 }
 
 run app

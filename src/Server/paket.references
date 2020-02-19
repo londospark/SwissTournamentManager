@@ -4,4 +4,8 @@ group Server
     Thoth.Json.Giraffe
     SkiaSharp.QrCode
     SkiaSharp.NativeAssets.Linux.NoDependencies
+
+    Dapper
+    Microsoft.Data.Sqlite
+
     dotnet-saturn
