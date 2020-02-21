@@ -84,6 +84,10 @@ let button txt onClick =
           Button.Color IsPrimary
           Button.OnClick onClick ] [ str txt ]
 
+let createPage (state: State) (dispatch: Msg -> unit) =
+    mainLayout
+        [ h2 [] [ str "Create Tournament" ] ]
+
 let listPage (state: State) (dispatch: Msg -> unit) =
     mainLayout
         [ Container.container [] [ button "Fetch Tournaments" (fun _ -> dispatch FetchTournaments) ]
@@ -115,6 +119,7 @@ let view (state: State) (dispatch: Msg -> unit) =
     let currentPage =
         match state.CurrentUrl with
         | [] -> listPage state dispatch
+        | [ "CreateTournament" ] -> createPage state dispatch
         | [ "Enter"; code ] -> enter code state dispatch
         | x -> div [] [ str (sprintf "%A" x) ]
 
