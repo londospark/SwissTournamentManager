@@ -27,6 +27,7 @@ type State =
 type Msg =
     | InitialModelLoaded of ApplicationState
     | FetchTournaments
+    | ShowCreateTournamentPage
     | TournamentListReceived of Tournament list
     | UrlChanged of string list
 
@@ -54,6 +55,7 @@ let init(): State * Cmd<Msg> =
 // these commands in turn, can dispatch messages to which the update function will react.
 let update (msg: Msg) (currentModel: State): State * Cmd<Msg> =
     match currentModel.PageModel, msg with
+    | _, ShowCreateTournamentPage -> currentModel, Router.navigate("CreateTournament")
     | _, InitialModelLoaded initialState ->
         let nextModel = { currentModel with PageModel = Some initialState }
         nextModel, Cmd.none
@@ -90,7 +92,10 @@ let createPage (state: State) (dispatch: Msg -> unit) =
 
 let listPage (state: State) (dispatch: Msg -> unit) =
     mainLayout
-        [ Container.container [] [ button "Fetch Tournaments" (fun _ -> dispatch FetchTournaments) ]
+        [ Container.container [] [
+            Columns.columns [] [
+                Column.column [] [button "Fetch Tournaments" (fun _ -> dispatch FetchTournaments) ]
+                Column.column [] [button "Create Tournament" (fun _ -> dispatch ShowCreateTournamentPage) ] ] ]
 
           Container.container []
               [ Table.table []
