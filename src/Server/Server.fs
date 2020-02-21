@@ -14,29 +14,17 @@ open SkiaSharp
 open SkiaSharp.QrCode.Image
 open System
 
-let tryGetEnv = System.Environment.GetEnvironmentVariable >> function null | "" -> None | x -> Some x
+let toOption (s: string): string option =
+    if String.IsNullOrEmpty(s) then None
+    else Some s
+
+let tryGetEnv: string -> string option = System.Environment.GetEnvironmentVariable >> toOption
 
 let publicPath = Path.GetFullPath "../Client/public"
 
 let port =
     "SERVER_PORT"
     |> tryGetEnv |> Option.map uint16 |> Option.defaultValue 8085us
-
-let tournaments : Tournament list =
-    [
-        {Name = "BCS London Cardfight Vanguard Premium"; Code = "CFV" }
-        {Name = "BCS London Buddyfight"; Code = "FCB" }
-    ]
-
-let findTournament (code: string) (tournaments: Tournament list) : Tournament option =
-    tournaments
-    |> List.filter (fun item -> item.Code = code)
-    |> List.tryHead
-
-let tournamentController = controller {
-    index (fun ctx -> tournaments |> Controller.json ctx)
-    show (fun ctx (key: string) -> tournaments |> findTournament key |> Controller.json ctx)
-}
 
 let image (x : MemoryStream) : HttpHandler =
     setHttpHeader "Content-Type" "image/png"
@@ -58,7 +46,6 @@ let apiApp = router {
             return! json model next ctx
         })
     forward "/tournaments" Tournaments.Controller.resource
-    //forward "/tournaments" tournamentController
     getf "/qrcode/%s" tournamentEntryQR
 }
 
