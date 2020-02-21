@@ -6,6 +6,10 @@ type Tournament = {
   code: string
 }
 
+module Mappers =
+    let toShared (t: Tournament): Shared.Tournament =
+        { Name = t.name; Code = t.code }
+
 module Validation =
   let validate v =
     let validators = [

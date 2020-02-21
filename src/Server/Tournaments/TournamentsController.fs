@@ -4,16 +4,20 @@ open Microsoft.AspNetCore.Http
 open FSharp.Control.Tasks.ContextInsensitive
 open Config
 open Saturn
+open System.Threading.Tasks
 
 module Controller =
 
-  let indexAction (ctx : HttpContext) =
+  let indexAction (ctx : HttpContext) : Task<Shared.Tournament list> =
     task {
       let cnf = Controller.getConfig ctx
       let! result = Database.getAll cnf.connectionString
       match result with
       | Ok result ->
-        return result |> Seq.toList
+        return
+            result
+            |> Seq.toList
+            |> List.map Mappers.toShared
       | Error ex ->
         return raise ex
     }

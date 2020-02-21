@@ -73,7 +73,7 @@ let app = application {
     use_static publicPath
     use_json_serializer(Thoth.Json.Giraffe.ThothSerializer())
     use_gzip
-    use_config (fun _ -> {connectionString = "DataSource=src/Server/database.sqlite"} )
+    use_config (fun _ -> {connectionString = "DataSource=database.sqlite"} )
 }
 
 run app

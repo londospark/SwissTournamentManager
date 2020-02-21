@@ -7,10 +7,10 @@
     <None Include="paket.references" />
     <Compile Include="Config.fs" />
     <Compile Include="Database.fs" />
+    <Compile Include="../Shared/Shared.fs" />
     <Compile Include="Tournaments/TournamentsModel.fs" />
     <Compile Include="Tournaments/TournamentsRepository.fs" />
     <Compile Include="Tournaments/TournamentsController.fs" />
-    <Compile Include="../Shared/Shared.fs" />
     <Compile Include="Server.fs" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />

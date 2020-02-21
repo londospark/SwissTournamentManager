@@ -5,6 +5,7 @@
             "name": "Debug Server",
             "type": "coreclr",
             "request": "launch",
+            "cwd": "${workspaceFolder}/src/Server/",
             "preLaunchTask": "Build Server",
             "program": "${workspaceFolder}/src/Server/bin/Debug/netcoreapp3.1/Server.dll",
             "args": [],
