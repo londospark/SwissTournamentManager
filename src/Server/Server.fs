@@ -71,7 +71,7 @@ let app = application {
     use_router webApp
     memory_cache
     use_static publicPath
-    // use_json_serializer(Thoth.Json.Giraffe.ThothSerializer()) // TODO(gareth): Why does this not work?
+    use_json_serializer(Thoth.Json.Giraffe.ThothSerializer())
     use_gzip
     use_config (fun _ -> {connectionString = "DataSource=src/Server/database.sqlite"} )
 }

@@ -13,7 +13,7 @@ module Controller =
       let! result = Database.getAll cnf.connectionString
       match result with
       | Ok result ->
-        return result
+        return result |> Seq.toList
       | Error ex ->
         return raise ex
     }
