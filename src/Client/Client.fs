@@ -13,9 +13,26 @@ open Feliz
 open Feliz.Router
 
 open Shared
-open Model
 
 let initialPage() = Fetch.fetchAs<ApplicationState> "/api/init"
+
+type PageModel =
+    | CreateTournamentPage of CreateTournament.PageState
+
+type State =
+    { PageModel: ApplicationState option
+      CurrentUrl: string list
+      Model: PageModel option }
+
+// The Msg type defines what events/actions can occur while the application is running
+// the state of the application changes *only* in reaction to these events
+type Msg =
+    | InitialModelLoaded of ApplicationState
+    | FetchTournaments
+    | ShowCreateTournamentPage
+    | TournamentListReceived of Tournament list
+    | UrlChanged of string list
+    | CreateTournamentPage of CreateTournament.PageMsg
 
 let fetchTournamentsCommand: Cmd<Msg> =
     Cmd.OfPromise.perform (fun () -> Fetch.fetchAs<Tournament list> "/api/tournaments") () TournamentListReceived
@@ -29,17 +46,18 @@ let tournaments (state: State) =
 let init(): State * Cmd<Msg> =
     let initialModel =
         { PageModel = None
-          CurrentUrl = Router.currentUrl() }
+          CurrentUrl = Router.currentUrl()
+          Model = None }
 
-    let loadCountCmd = Cmd.OfPromise.perform initialPage () InitialModelLoaded
-    initialModel, loadCountCmd
+    let initialiseModelCmd = Cmd.OfPromise.perform initialPage () InitialModelLoaded
+    initialModel, initialiseModelCmd
 
 // The update function computes the next state of the application based on the current state and the incoming events/messages
 // It can also run side-effects (encoded as commands) like calling the server via Http.
 // these commands in turn, can dispatch messages to which the update function will react.
 let update (msg: Msg) (currentModel: State): State * Cmd<Msg> =
     match currentModel.PageModel, msg with
-    | _, ShowCreateTournamentPage -> currentModel, Router.navigate("CreateTournament")
+    | _, ShowCreateTournamentPage -> { currentModel with Model = Some (PageModel.CreateTournamentPage CreateTournament.defaultState) }, Router.navigate("CreateTournament")
     | _, InitialModelLoaded initialState ->
         let nextModel = { currentModel with PageModel = Some initialState }
         nextModel, Cmd.none
@@ -100,10 +118,10 @@ let entryPage (code: string) (state: State) (dispatch: Msg -> unit) =
 
 let view (state: State) (dispatch: Msg -> unit) =
     let currentPage =
-        match state.CurrentUrl with
-        | [] -> listPage state dispatch
-        | [ "CreateTournament" ] -> CreateTournament.view state dispatch
-        | [ "Enter"; code ] -> entryPage code state dispatch
+        match state.CurrentUrl, state.Model with
+        | [], _ -> listPage state dispatch
+        | [ "CreateTournament" ], Some (PageModel.CreateTournamentPage model) -> CreateTournament.view model (CreateTournamentPage >> dispatch)
+        | [ "Enter"; code ], _ -> entryPage code state dispatch
         | x -> [ div [] [ str (sprintf "%A" x) ] ]
 
     Router.router
