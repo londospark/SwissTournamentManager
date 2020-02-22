@@ -56,16 +56,21 @@ let init(): State * Cmd<Msg> =
 // It can also run side-effects (encoded as commands) like calling the server via Http.
 // these commands in turn, can dispatch messages to which the update function will react.
 let update (msg: Msg) (currentModel: State): State * Cmd<Msg> =
-    match currentModel.PageModel, msg with
-    | _, ShowCreateTournamentPage -> { currentModel with Model = Some (PageModel.CreateTournamentPage CreateTournament.defaultState) }, Router.navigate("CreateTournament")
-    | _, InitialModelLoaded initialState ->
+    match currentModel.PageModel, currentModel.Model, msg with // TODO(gareth): Fix horribleness... remove PageModel?
+    | _, Some (PageModel.CreateTournamentPage pageModel), CreateTournamentPage pageMsg ->
+        let (nextPageModel, cmd) = CreateTournament.update pageMsg pageModel
+        let nextModel = { currentModel with Model = Some (PageModel.CreateTournamentPage nextPageModel) }
+        nextModel, cmd |> Cmd.map CreateTournamentPage
+    | _, _, ShowCreateTournamentPage ->
+        { currentModel with Model = Some (PageModel.CreateTournamentPage CreateTournament.defaultState) }, Router.navigate("CreateTournament")
+    | _, _, InitialModelLoaded initialState ->
         let nextModel = { currentModel with PageModel = Some initialState }
         nextModel, Cmd.none
-    | _, FetchTournaments -> currentModel, fetchTournamentsCommand
-    | Some state, TournamentListReceived tournaments ->
+    | _, _, FetchTournaments -> currentModel, fetchTournamentsCommand
+    | Some state, _, TournamentListReceived tournaments ->
         let nextModel = { currentModel with PageModel = Some { state with Tournaments = tournaments } }
         nextModel, Cmd.none
-    | _, UrlChanged segments ->
+    | _, _, UrlChanged segments ->
         let nextModel = { currentModel with CurrentUrl = segments }
         nextModel, Cmd.none
     | _ -> currentModel, Cmd.none
