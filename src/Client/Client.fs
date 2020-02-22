@@ -18,6 +18,7 @@ open Fable.Core.JS
 type PageState =
     | CreateTournamentState of CreateTournament.State
     | IndexState of Index.State
+    | EnterTournamentState of EnterTournament.State
     | NotImplemented
 
 type State =
@@ -28,11 +29,13 @@ type Msg =
     | UrlChanged of string list
     | CreateTournamentMsg of CreateTournament.Msg
     | IndexMsg of Index.Msg
+    | EnterTournamentMsg of EnterTournament.Msg
 
 let routeToPage (segments: string list): PageState =
     match segments with
     | [] -> IndexState Index.defaultState
     | ["CreateTournament"] -> CreateTournamentState CreateTournament.defaultState
+    | ["Enter"; code] -> EnterTournamentState (EnterTournament.tournamentForCode code)
     | _ -> NotImplemented
 
 let init(): State * Cmd<Msg> =
@@ -70,25 +73,20 @@ let mainLayout (body: ReactElement list): ReactElement =
                           Navbar.Link.Props [ Href "#" ] ] [ str "Swiss Tournament Manager" ] ] ]
           yield! body ]
 
-let entryPage (code: string) (state: State) (dispatch: Msg -> unit) =
-        [ Container.container []
-              [ Heading.h2 [ Heading.IsSubtitle ] [ str (sprintf "Entering tournament: %s" code) ]
-                form []
-                    [ Field.div []
-                          [ Label.label [] [ str "Name" ]
-                            Control.div [] [ Input.text [ Input.Placeholder "For use in this tournament only." ] ] ] ] ] ]
 
 let view (state: State) (dispatch: Msg -> unit) =
     let currentPage =
-        match state.UrlSegments, state.PageState with
-        | [], IndexState model ->
+        match state.PageState with
+        | IndexState model ->
             Index.view model (IndexMsg >> dispatch)
 
-        | [ "CreateTournament" ], CreateTournamentState model ->
+        | CreateTournamentState model ->
             CreateTournament.view model (CreateTournamentMsg >> dispatch)
 
-        | [ "Enter"; code ], _ -> entryPage code state dispatch
-        | x -> [ div [] [ str (sprintf "%A" x) ] ]
+        | EnterTournamentState model ->
+            EnterTournament.view model (EnterTournamentMsg >> dispatch)
+
+        | NotImplemented -> [ div [] [ str (sprintf "%A" state.UrlSegments) ] ]
 
     Router.router
         [ Router.onUrlChanged (UrlChanged >> dispatch)
