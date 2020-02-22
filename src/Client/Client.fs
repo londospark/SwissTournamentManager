@@ -13,40 +13,39 @@ open Feliz
 open Feliz.Router
 
 open Shared
-
-let initialPage() = Fetch.fetchAs<ApplicationState> "/api/init"
+open Fable.Core.JS
 
 type PageModel =
     | CreateTournamentPage of CreateTournament.PageState
+    | IndexPage of ApplicationState
 
 type State =
-    { PageModel: ApplicationState option
-      CurrentUrl: string list
+    { CurrentUrl: string list
       Model: PageModel option }
 
 // The Msg type defines what events/actions can occur while the application is running
 // the state of the application changes *only* in reaction to these events
 type Msg =
-    | InitialModelLoaded of ApplicationState
+    | InitialModelLoaded of PageModel
     | FetchTournaments
     | ShowCreateTournamentPage
     | TournamentListReceived of Tournament list
     | UrlChanged of string list
     | CreateTournamentPage of CreateTournament.PageMsg
 
+let initialPage(): Promise<PageModel> =
+    promise {
+        let! state = Fetch.fetchAs<ApplicationState> "/api/init"
+        return IndexPage state
+    }
+
 let fetchTournamentsCommand: Cmd<Msg> =
     Cmd.OfPromise.perform (fun () -> Fetch.fetchAs<Tournament list> "/api/tournaments") () TournamentListReceived
-
-let tournaments (state: State) =
-    match state.PageModel with
-    | Some appState -> appState.Tournaments
-    | _ -> []
 
 // defines the initial state and initial command (= side-effect) of the application
 let init(): State * Cmd<Msg> =
     let initialModel =
-        { PageModel = None
-          CurrentUrl = Router.currentUrl()
+        { CurrentUrl = Router.currentUrl()
           Model = None }
 
     let initialiseModelCmd = Cmd.OfPromise.perform initialPage () InitialModelLoaded
@@ -56,21 +55,21 @@ let init(): State * Cmd<Msg> =
 // It can also run side-effects (encoded as commands) like calling the server via Http.
 // these commands in turn, can dispatch messages to which the update function will react.
 let update (msg: Msg) (currentModel: State): State * Cmd<Msg> =
-    match currentModel.PageModel, currentModel.Model, msg with // TODO(gareth): Fix horribleness... remove PageModel?
-    | _, Some (PageModel.CreateTournamentPage pageModel), CreateTournamentPage pageMsg ->
+    match currentModel.Model, msg with // TODO(gareth): Fix horribleness... remove PageModel?
+    | Some (PageModel.CreateTournamentPage pageModel), CreateTournamentPage pageMsg ->
         let (nextPageModel, cmd) = CreateTournament.update pageMsg pageModel
         let nextModel = { currentModel with Model = Some (PageModel.CreateTournamentPage nextPageModel) }
         nextModel, cmd |> Cmd.map CreateTournamentPage
-    | _, _, ShowCreateTournamentPage ->
+    | _, ShowCreateTournamentPage ->
         { currentModel with Model = Some (PageModel.CreateTournamentPage CreateTournament.defaultState) }, Router.navigate("CreateTournament")
-    | _, _, InitialModelLoaded initialState ->
-        let nextModel = { currentModel with PageModel = Some initialState }
+    | _, InitialModelLoaded initialState ->
+        let nextModel = { currentModel with Model = Some initialState }
         nextModel, Cmd.none
-    | _, _, FetchTournaments -> currentModel, fetchTournamentsCommand
-    | Some state, _, TournamentListReceived tournaments ->
-        let nextModel = { currentModel with PageModel = Some { state with Tournaments = tournaments } }
+    | _, FetchTournaments -> currentModel, fetchTournamentsCommand
+    | Some (PageModel.IndexPage pageModel), TournamentListReceived tournaments ->
+        let nextModel = { currentModel with Model = Some (IndexPage { pageModel with Tournaments = tournaments } )}
         nextModel, Cmd.none
-    | _, _, UrlChanged segments ->
+    | _, UrlChanged segments ->
         let nextModel = { currentModel with CurrentUrl = segments }
         nextModel, Cmd.none
     | _ -> currentModel, Cmd.none
@@ -93,7 +92,7 @@ let button txt onClick =
           Button.Color IsPrimary
           Button.OnClick onClick ] [ str txt ]
 
-let listPage (state: State) (dispatch: Msg -> unit) =
+let listPage (state: ApplicationState) (dispatch: Msg -> unit) =
         [ Container.container [] [
             Columns.columns [] [
                 Column.column [] [button "Fetch Tournaments" (fun _ -> dispatch FetchTournaments) ]
@@ -107,7 +106,7 @@ let listPage (state: State) (dispatch: Msg -> unit) =
                                         th [] [ str "QR" ]
                                         th [] [ str "Entry Link" ] ] ]
                       tbody []
-                          [ for t in tournaments state ->
+                          [ for t in state.Tournaments ->
                               tr []
                                   [ td [] [ str t.Name ]
                                     td [] [ qrcode t ]
@@ -124,7 +123,7 @@ let entryPage (code: string) (state: State) (dispatch: Msg -> unit) =
 let view (state: State) (dispatch: Msg -> unit) =
     let currentPage =
         match state.CurrentUrl, state.Model with
-        | [], _ -> listPage state dispatch
+        | [], Some (PageModel.IndexPage model) -> listPage model dispatch
         | [ "CreateTournament" ], Some (PageModel.CreateTournamentPage model) -> CreateTournament.view model (CreateTournamentPage >> dispatch)
         | [ "Enter"; code ], _ -> entryPage code state dispatch
         | x -> [ div [] [ str (sprintf "%A" x) ] ]
