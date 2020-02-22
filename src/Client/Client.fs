@@ -18,10 +18,11 @@ open Fable.Core.JS
 type PageModel =
     | CreateTournamentPage of CreateTournament.State
     | IndexPage of Index.State
+    | NotImplemented
 
 type State =
     { CurrentUrl: string list
-      Model: PageModel option }
+      Model: PageModel }
 
 // The Msg type defines what events/actions can occur while the application is running
 // the state of the application changes *only* in reaction to these events
@@ -31,42 +32,42 @@ type Msg =
     | CreateTournamentPage of CreateTournament.Msg
     | IndexPage of Index.Msg
 
-let initialPage(): Promise<PageModel> =
-    promise {
-        let! tournaments = Fetch.fetchAs<Tournament list> "/api/init"
-        return PageModel.IndexPage { Tournaments = tournaments }
-    }
+let routeToPage (segments: string list): PageModel =
+    match segments with
+    | [] -> PageModel.IndexPage Index.defaultState
+    | ["CreateTournament"] -> PageModel.CreateTournamentPage CreateTournament.defaultState
+    | _ -> NotImplemented
 
 // defines the initial state and initial command (= side-effect) of the application
 let init(): State * Cmd<Msg> =
+    let segments = Router.currentUrl()
     let initialModel =
-        { CurrentUrl = Router.currentUrl()
-          Model = None }
+        { CurrentUrl = segments
+          Model = routeToPage segments }
 
-    let initialiseModelCmd = Cmd.OfPromise.perform initialPage () InitialModelLoaded
-    initialModel, initialiseModelCmd
+    initialModel, Cmd.none
 
 // The update function computes the next state of the application based on the current state and the incoming events/messages
 // It can also run side-effects (encoded as commands) like calling the server via Http.
 // these commands in turn, can dispatch messages to which the update function will react.
 let update (msg: Msg) (currentModel: State): State * Cmd<Msg> =
     match currentModel.Model, msg with // TODO(gareth): Fix horribleness... remove PageModel?
-    | Some (PageModel.CreateTournamentPage pageModel), CreateTournamentPage pageMsg ->
+    | PageModel.CreateTournamentPage pageModel, CreateTournamentPage pageMsg ->
         let (nextPageModel, cmd) = CreateTournament.update pageMsg pageModel
-        let nextModel = { currentModel with Model = Some (PageModel.CreateTournamentPage nextPageModel) }
+        let nextModel = { currentModel with Model = PageModel.CreateTournamentPage nextPageModel }
         nextModel, cmd |> Cmd.map CreateTournamentPage
 
-    | Some (PageModel.IndexPage pageModel), IndexPage pageMsg ->
+    | PageModel.IndexPage pageModel, IndexPage pageMsg ->
         let (nextPageModel, cmd) = Index.update pageMsg pageModel
-        let nextModel = { currentModel with Model = Some (PageModel.IndexPage nextPageModel) }
+        let nextModel = { currentModel with Model = PageModel.IndexPage nextPageModel }
         nextModel, cmd |> Cmd.map IndexPage
 
     | _, InitialModelLoaded initialState ->
-        let nextModel = { currentModel with Model = Some initialState }
+        let nextModel = { currentModel with Model = initialState }
         nextModel, Cmd.none
 
     | _, UrlChanged segments ->
-        let nextModel = { currentModel with CurrentUrl = segments }
+        let nextModel = { CurrentUrl = segments; Model = routeToPage segments }
         nextModel, Cmd.none
 
     | _ -> currentModel, Cmd.none
@@ -91,15 +92,15 @@ let entryPage (code: string) (state: State) (dispatch: Msg -> unit) =
 let view (state: State) (dispatch: Msg -> unit) =
     let currentPage =
         match state.CurrentUrl, state.Model with
-        | [], Some (PageModel.IndexPage model) ->
+        | [], PageModel.IndexPage model ->
             Index.view model (IndexPage >> dispatch)
 
-        | [ "CreateTournament" ], Some (PageModel.CreateTournamentPage model) ->
+        | [ "CreateTournament" ], PageModel.CreateTournamentPage model ->
             CreateTournament.view model (CreateTournamentPage >> dispatch)
 
-        | [ "CreateTournament" ], _ ->
-            let model = CreateTournament.defaultState
-            CreateTournament.view model (CreateTournamentPage >> dispatch)
+        // | [ "CreateTournament" ], _ ->
+        //     let model = CreateTournament.defaultState
+        //     CreateTournament.view model (CreateTournamentPage >> dispatch)
 
         | [ "Enter"; code ], _ -> entryPage code state dispatch
         | x -> [ div [] [ str (sprintf "%A" x) ] ]

@@ -12,6 +12,8 @@ open Thoth.Fetch
 
 type State = { Tournaments: Tournament list }
 
+let defaultState : State = { Tournaments = [] }
+
 type Msg =
     | FetchTournaments
     | TournamentListReceived of Tournament list
