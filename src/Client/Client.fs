@@ -15,11 +15,9 @@ open Feliz.Router
 open Shared
 open Fable.Core.JS
 
-type IndexState = { Tournaments: Tournament list }
-
 type PageModel =
     | CreateTournamentPage of CreateTournament.State
-    | IndexPage of IndexState
+    | IndexPage of Index.State
 
 type State =
     { CurrentUrl: string list
@@ -29,20 +27,15 @@ type State =
 // the state of the application changes *only* in reaction to these events
 type Msg =
     | InitialModelLoaded of PageModel
-    | FetchTournaments
-    | ShowCreateTournamentPage
-    | TournamentListReceived of Tournament list
     | UrlChanged of string list
     | CreateTournamentPage of CreateTournament.Msg
+    | IndexPage of Index.Msg
 
 let initialPage(): Promise<PageModel> =
     promise {
         let! tournaments = Fetch.fetchAs<Tournament list> "/api/init"
-        return IndexPage { Tournaments = tournaments }
+        return PageModel.IndexPage { Tournaments = tournaments }
     }
-
-let fetchTournamentsCommand: Cmd<Msg> =
-    Cmd.OfPromise.perform (fun () -> Fetch.fetchAs<Tournament list> "/api/tournaments") () TournamentListReceived
 
 // defines the initial state and initial command (= side-effect) of the application
 let init(): State * Cmd<Msg> =
@@ -62,18 +55,20 @@ let update (msg: Msg) (currentModel: State): State * Cmd<Msg> =
         let (nextPageModel, cmd) = CreateTournament.update pageMsg pageModel
         let nextModel = { currentModel with Model = Some (PageModel.CreateTournamentPage nextPageModel) }
         nextModel, cmd |> Cmd.map CreateTournamentPage
-    | _, ShowCreateTournamentPage ->
-        { currentModel with Model = Some (PageModel.CreateTournamentPage CreateTournament.defaultState) }, Router.navigate("CreateTournament")
+
+    | Some (PageModel.IndexPage pageModel), IndexPage pageMsg ->
+        let (nextPageModel, cmd) = Index.update pageMsg pageModel
+        let nextModel = { currentModel with Model = Some (PageModel.IndexPage nextPageModel) }
+        nextModel, cmd |> Cmd.map IndexPage
+
     | _, InitialModelLoaded initialState ->
         let nextModel = { currentModel with Model = Some initialState }
         nextModel, Cmd.none
-    | _, FetchTournaments -> currentModel, fetchTournamentsCommand
-    | Some (PageModel.IndexPage pageModel), TournamentListReceived tournaments ->
-        let nextModel = { currentModel with Model = Some (IndexPage { pageModel with Tournaments = tournaments } )}
-        nextModel, Cmd.none
+
     | _, UrlChanged segments ->
         let nextModel = { currentModel with CurrentUrl = segments }
         nextModel, Cmd.none
+
     | _ -> currentModel, Cmd.none
 
 let mainLayout (body: ReactElement list): ReactElement =
@@ -84,35 +79,6 @@ let mainLayout (body: ReactElement list): ReactElement =
                         [ Navbar.Link.IsArrowless
                           Navbar.Link.Props [ Href "#" ] ] [ str "Swiss Tournament Manager" ] ] ]
           yield! body ]
-
-let qrcode (tournament: Tournament) = img [ Src("/api/qrcode/" + tournament.Code) ]
-let link (tournament: Tournament) = a [Href ("/#Enter/" + tournament.Code) ] [ str ("/#Enter/" + tournament.Code) ]
-
-let button txt onClick =
-    Button.button
-        [ Button.IsFullWidth
-          Button.Color IsPrimary
-          Button.OnClick onClick ] [ str txt ]
-
-let listPage (state: IndexState) (dispatch: Msg -> unit) =
-        [ Container.container [] [
-            Columns.columns [] [
-                Column.column [] [button "Fetch Tournaments" (fun _ -> dispatch FetchTournaments) ]
-                Column.column [] [button "Create Tournament" (fun _ -> dispatch ShowCreateTournamentPage) ] ] ]
-
-          Container.container []
-              [ Table.table []
-                    [ thead []
-                          [ yield tr []
-                                      [ th [] [ str "Name" ]
-                                        th [] [ str "QR" ]
-                                        th [] [ str "Entry Link" ] ] ]
-                      tbody []
-                          [ for t in state.Tournaments ->
-                              tr []
-                                  [ td [] [ str t.Name ]
-                                    td [] [ qrcode t ]
-                                    td [] [ link t ] ] ] ] ] ]
 
 let entryPage (code: string) (state: State) (dispatch: Msg -> unit) =
         [ Container.container []
@@ -125,8 +91,16 @@ let entryPage (code: string) (state: State) (dispatch: Msg -> unit) =
 let view (state: State) (dispatch: Msg -> unit) =
     let currentPage =
         match state.CurrentUrl, state.Model with
-        | [], Some (PageModel.IndexPage model) -> listPage model dispatch
-        | [ "CreateTournament" ], Some (PageModel.CreateTournamentPage model) -> CreateTournament.view model (CreateTournamentPage >> dispatch)
+        | [], Some (PageModel.IndexPage model) ->
+            Index.view model (IndexPage >> dispatch)
+
+        | [ "CreateTournament" ], Some (PageModel.CreateTournamentPage model) ->
+            CreateTournament.view model (CreateTournamentPage >> dispatch)
+
+        | [ "CreateTournament" ], _ ->
+            let model = CreateTournament.defaultState
+            CreateTournament.view model (CreateTournamentPage >> dispatch)
+
         | [ "Enter"; code ], _ -> entryPage code state dispatch
         | x -> [ div [] [ str (sprintf "%A" x) ] ]
 
