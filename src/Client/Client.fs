@@ -87,11 +87,9 @@ let button txt onClick =
           Button.OnClick onClick ] [ str txt ]
 
 let createPage (state: State) (dispatch: Msg -> unit) =
-    mainLayout
         [ h2 [] [ str "Create Tournament" ] ]
 
 let listPage (state: State) (dispatch: Msg -> unit) =
-    mainLayout
         [ Container.container [] [
             Columns.columns [] [
                 Column.column [] [button "Fetch Tournaments" (fun _ -> dispatch FetchTournaments) ]
@@ -111,8 +109,7 @@ let listPage (state: State) (dispatch: Msg -> unit) =
                                     td [] [ qrcode t ]
                                     td [] [ link t ] ] ] ] ] ]
 
-let enter (code: string) (state: State) (dispatch: Msg -> unit) =
-    mainLayout
+let entryPage (code: string) (state: State) (dispatch: Msg -> unit) =
         [ Container.container []
               [ Heading.h2 [ Heading.IsSubtitle ] [ str (sprintf "Entering tournament: %s" code) ]
                 form []
@@ -125,12 +122,12 @@ let view (state: State) (dispatch: Msg -> unit) =
         match state.CurrentUrl with
         | [] -> listPage state dispatch
         | [ "CreateTournament" ] -> createPage state dispatch
-        | [ "Enter"; code ] -> enter code state dispatch
-        | x -> div [] [ str (sprintf "%A" x) ]
+        | [ "Enter"; code ] -> entryPage code state dispatch
+        | x -> [ div [] [ str (sprintf "%A" x) ] ]
 
     Router.router
         [ Router.onUrlChanged (UrlChanged >> dispatch)
-          Router.application currentPage ]
+          Router.application (mainLayout currentPage) ]
 
 #if DEBUG
 open Elmish.Debug
