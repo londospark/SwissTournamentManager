@@ -15,59 +15,48 @@ open Feliz.Router
 open Shared
 open Fable.Core.JS
 
-type PageModel =
-    | CreateTournamentPage of CreateTournament.State
-    | IndexPage of Index.State
+type PageState =
+    | CreateTournamentState of CreateTournament.State
+    | IndexState of Index.State
     | NotImplemented
 
 type State =
-    { CurrentUrl: string list
-      Model: PageModel }
+    { UrlSegments: string list
+      PageState: PageState }
 
-// The Msg type defines what events/actions can occur while the application is running
-// the state of the application changes *only* in reaction to these events
 type Msg =
-    | InitialModelLoaded of PageModel
     | UrlChanged of string list
-    | CreateTournamentPage of CreateTournament.Msg
-    | IndexPage of Index.Msg
+    | CreateTournamentMsg of CreateTournament.Msg
+    | IndexMsg of Index.Msg
 
-let routeToPage (segments: string list): PageModel =
+let routeToPage (segments: string list): PageState =
     match segments with
-    | [] -> PageModel.IndexPage Index.defaultState
-    | ["CreateTournament"] -> PageModel.CreateTournamentPage CreateTournament.defaultState
+    | [] -> IndexState Index.defaultState
+    | ["CreateTournament"] -> CreateTournamentState CreateTournament.defaultState
     | _ -> NotImplemented
 
-// defines the initial state and initial command (= side-effect) of the application
 let init(): State * Cmd<Msg> =
     let segments = Router.currentUrl()
     let initialModel =
-        { CurrentUrl = segments
-          Model = routeToPage segments }
+        { UrlSegments = segments
+          PageState = routeToPage segments }
 
     initialModel, Cmd.none
 
-// The update function computes the next state of the application based on the current state and the incoming events/messages
-// It can also run side-effects (encoded as commands) like calling the server via Http.
-// these commands in turn, can dispatch messages to which the update function will react.
 let update (msg: Msg) (currentModel: State): State * Cmd<Msg> =
-    match currentModel.Model, msg with // TODO(gareth): Fix horribleness... remove PageModel?
-    | PageModel.CreateTournamentPage pageModel, CreateTournamentPage pageMsg ->
+    match currentModel.PageState, msg with
+    | CreateTournamentState pageModel, CreateTournamentMsg pageMsg ->
         let (nextPageModel, cmd) = CreateTournament.update pageMsg pageModel
-        let nextModel = { currentModel with Model = PageModel.CreateTournamentPage nextPageModel }
-        nextModel, cmd |> Cmd.map CreateTournamentPage
+        let nextModel = { currentModel with PageState = PageState.CreateTournamentState nextPageModel }
+        nextModel, cmd |> Cmd.map CreateTournamentMsg
 
-    | PageModel.IndexPage pageModel, IndexPage pageMsg ->
+    | IndexState pageModel, IndexMsg pageMsg ->
         let (nextPageModel, cmd) = Index.update pageMsg pageModel
-        let nextModel = { currentModel with Model = PageModel.IndexPage nextPageModel }
-        nextModel, cmd |> Cmd.map IndexPage
-
-    | _, InitialModelLoaded initialState ->
-        let nextModel = { currentModel with Model = initialState }
-        nextModel, Cmd.none
+        let nextModel = { currentModel with PageState = PageState.IndexState nextPageModel }
+        nextModel, cmd |> Cmd.map IndexMsg
 
     | _, UrlChanged segments ->
-        let nextModel = { CurrentUrl = segments; Model = routeToPage segments }
+        let nextModel = { UrlSegments = segments; PageState = routeToPage segments }
         nextModel, Cmd.none
 
     | _ -> currentModel, Cmd.none
@@ -91,16 +80,12 @@ let entryPage (code: string) (state: State) (dispatch: Msg -> unit) =
 
 let view (state: State) (dispatch: Msg -> unit) =
     let currentPage =
-        match state.CurrentUrl, state.Model with
-        | [], PageModel.IndexPage model ->
-            Index.view model (IndexPage >> dispatch)
+        match state.UrlSegments, state.PageState with
+        | [], IndexState model ->
+            Index.view model (IndexMsg >> dispatch)
 
-        | [ "CreateTournament" ], PageModel.CreateTournamentPage model ->
-            CreateTournament.view model (CreateTournamentPage >> dispatch)
-
-        // | [ "CreateTournament" ], _ ->
-        //     let model = CreateTournament.defaultState
-        //     CreateTournament.view model (CreateTournamentPage >> dispatch)
+        | [ "CreateTournament" ], CreateTournamentState model ->
+            CreateTournament.view model (CreateTournamentMsg >> dispatch)
 
         | [ "Enter"; code ], _ -> entryPage code state dispatch
         | x -> [ div [] [ str (sprintf "%A" x) ] ]
