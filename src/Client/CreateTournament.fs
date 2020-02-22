@@ -6,25 +6,25 @@ open Fable.React
 
 open Elmish
 
-type PageState = {
+type State = {
     Name: string
     Code: string
 }
 
-let defaultState: PageState = { Name = ""; Code = "" }
+let defaultState: State = { Name = ""; Code = "" }
 
-type PageMsg =
+type Msg =
     | ChangedName of string
     | ChangedCode of string
     | SubmitTournament
 
-let update (msg: PageMsg) (state: PageState): PageState * Cmd<PageMsg> =
+let update (msg: Msg) (state: State): State * Cmd<Msg> =
     match msg with
     | ChangedName name -> { state with Name = name }, Cmd.none
     | ChangedCode code -> { state with Code = code }, Cmd.none
     | SubmitTournament -> state, Cmd.none
 
-let view (state: PageState) (dispatch: PageMsg -> unit) =
+let view (state: State) (dispatch: Msg -> unit) =
         [ Heading.h2 [] [ str "Create Tournament" ]
           form []
             [ Field.div []

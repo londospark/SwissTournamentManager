@@ -15,9 +15,11 @@ open Feliz.Router
 open Shared
 open Fable.Core.JS
 
+type IndexState = { Tournaments: Tournament list }
+
 type PageModel =
-    | CreateTournamentPage of CreateTournament.PageState
-    | IndexPage of ApplicationState
+    | CreateTournamentPage of CreateTournament.State
+    | IndexPage of IndexState
 
 type State =
     { CurrentUrl: string list
@@ -31,12 +33,12 @@ type Msg =
     | ShowCreateTournamentPage
     | TournamentListReceived of Tournament list
     | UrlChanged of string list
-    | CreateTournamentPage of CreateTournament.PageMsg
+    | CreateTournamentPage of CreateTournament.Msg
 
 let initialPage(): Promise<PageModel> =
     promise {
-        let! state = Fetch.fetchAs<ApplicationState> "/api/init"
-        return IndexPage state
+        let! tournaments = Fetch.fetchAs<Tournament list> "/api/init"
+        return IndexPage { Tournaments = tournaments }
     }
 
 let fetchTournamentsCommand: Cmd<Msg> =
@@ -92,7 +94,7 @@ let button txt onClick =
           Button.Color IsPrimary
           Button.OnClick onClick ] [ str txt ]
 
-let listPage (state: ApplicationState) (dispatch: Msg -> unit) =
+let listPage (state: IndexState) (dispatch: Msg -> unit) =
         [ Container.container [] [
             Columns.columns [] [
                 Column.column [] [button "Fetch Tournaments" (fun _ -> dispatch FetchTournaments) ]

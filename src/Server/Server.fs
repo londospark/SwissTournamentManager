@@ -42,7 +42,7 @@ let tournamentEntryQR code = image (generateQRCode "http://localhost:8080" code)
 let apiApp = router {
     get "/init" (fun next ctx ->
         task {
-            let model : ApplicationState = { Tournaments = [] }
+            let model : Tournament list = []
             return! json model next ctx
         })
     forward "/tournaments" Tournaments.Controller.resource
