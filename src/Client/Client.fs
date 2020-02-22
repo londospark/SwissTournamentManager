@@ -13,23 +13,7 @@ open Feliz
 open Feliz.Router
 
 open Shared
-
-// The model holds data that you want to keep track of while the application is running
-// in this case, we are keeping track of a counter
-// we mark it as optional, because initially it will not be available from the client
-// the initial value will be requested from server
-type State =
-    { PageModel: ApplicationState option
-      CurrentUrl: string list }
-
-// The Msg type defines what events/actions can occur while the application is running
-// the state of the application changes *only* in reaction to these events
-type Msg =
-    | InitialModelLoaded of ApplicationState
-    | FetchTournaments
-    | ShowCreateTournamentPage
-    | TournamentListReceived of Tournament list
-    | UrlChanged of string list
+open Model
 
 let initialPage() = Fetch.fetchAs<ApplicationState> "/api/init"
 
@@ -86,9 +70,6 @@ let button txt onClick =
           Button.Color IsPrimary
           Button.OnClick onClick ] [ str txt ]
 
-let createPage (state: State) (dispatch: Msg -> unit) =
-        [ h2 [] [ str "Create Tournament" ] ]
-
 let listPage (state: State) (dispatch: Msg -> unit) =
         [ Container.container [] [
             Columns.columns [] [
@@ -121,7 +102,7 @@ let view (state: State) (dispatch: Msg -> unit) =
     let currentPage =
         match state.CurrentUrl with
         | [] -> listPage state dispatch
-        | [ "CreateTournament" ] -> createPage state dispatch
+        | [ "CreateTournament" ] -> CreateTournament.view state dispatch
         | [ "Enter"; code ] -> entryPage code state dispatch
         | x -> [ div [] [ str (sprintf "%A" x) ] ]
 
