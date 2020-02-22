@@ -47,7 +47,7 @@ let update (msg: Msg) (currentModel: State): State * Cmd<Msg> =
     match currentModel.PageState, msg with
     | CreateTournamentState pageModel, CreateTournamentMsg pageMsg ->
         let (nextPageModel, cmd) = CreateTournament.update pageMsg pageModel
-        let nextModel = { currentModel with PageState = PageState.CreateTournamentState nextPageModel }
+        let nextModel = { currentModel with PageState = CreateTournamentState nextPageModel }
         nextModel, cmd |> Cmd.map CreateTournamentMsg
 
     | IndexState pageModel, IndexMsg pageMsg ->
