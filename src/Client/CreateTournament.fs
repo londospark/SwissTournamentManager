@@ -4,6 +4,8 @@ open Fulma
 open Fable.React.Helpers
 open Fable.React
 
+open Lenses
+
 open Elmish
 
 type State = {
@@ -13,24 +15,34 @@ type State = {
 
 let defaultState: State = { Name = ""; Code = "" }
 
+let name = Lens ((fun state -> state.Name), (fun state name -> {state with Name = name}))
+let code = Lens ((fun state -> state.Code), (fun state code -> {state with Code = code}))
+
 type Msg =
-    | ChangedName of string
-    | ChangedCode of string
+    | ChangedValue of Lens<State, string> * string
     | SubmitTournament
 
 let update (msg: Msg) (state: State): State * Cmd<Msg> =
     match msg with
-    | ChangedName name -> { state with Name = name }, Cmd.none
-    | ChangedCode code -> { state with Code = code }, Cmd.none
+    | ChangedValue (Lens (_, put), value) -> put state value, Cmd.none
     | SubmitTournament -> state, Cmd.none
 
+let get (Lens (get, _): Lens<'Outer, 'Inner>) (outer: 'Outer): 'Inner = get outer
+
+let input (state: State) (dispatch: Msg -> unit) (lens: Lens<State, string>) (label: string) (placeholder: string): ReactElement =
+    Field.div []
+      [ Label.label [] [ str label ]
+        Control.div [] [
+            Input.text [
+                Input.Placeholder placeholder
+                Input.Value (get lens state)
+                Input.OnChange (fun event -> dispatch (ChangedValue (lens, event.Value))) ] ] ]
+
 let view (state: State) (dispatch: Msg -> unit) =
-        [ Heading.h2 [] [ str "Create Tournament" ]
-          form []
-            [ Field.div []
-                [ Label.label [] [ str "Name" ]
-                  Control.div [] [
-                      Input.text [
-                          Input.Placeholder "Advertising name."
-                          Input.Value state.Name
-                          Input.OnChange (fun event -> dispatch (ChangedName event.Value)) ] ] ] ] ]
+    let pageInput = input state dispatch
+
+    [ Container.container [] [
+        Heading.h2 [] [ str "Create Tournament" ]
+        form []
+          [ pageInput name "Name" "Advertising name."
+            pageInput code "Code" "Tournament Code for entry." ] ] ]
