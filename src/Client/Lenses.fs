@@ -8,3 +8,6 @@ let compose (Lens (getL, putL): Lens<'Outer, 'Middle>) (Lens (getR, putR): Lens<
     Lens (getL >> getR, put)
 
 let (>->) l r = compose l r
+
+let get (Lens (get, _): Lens<'Outer, 'Inner>) (outer: 'Outer): 'Inner = get outer
+let set (Lens (_, set): Lens<'Outer, 'Inner>) (outer: 'Outer) (value: 'Inner): 'Outer = set outer value
