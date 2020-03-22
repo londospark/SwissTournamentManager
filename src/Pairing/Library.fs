@@ -11,7 +11,11 @@ module Domain =
 
     let pairSimpleSwissRound (state: TournamentState): Pairing list =
         let rec generatePairing = function
-        | p1::p2::ps -> [ yield Game (p1, p2); yield! generatePairing ps]
+        | player1::player2::remainingPlayers ->
+            [
+                yield Game (player1, player2)
+                yield! generatePairing remainingPlayers
+            ]
         | [player] -> [Bye (player)]
         | [] -> []
 
