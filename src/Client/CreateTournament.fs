@@ -7,12 +7,12 @@ open Fable.React
 open ViewHelpers
 open Lenses
 
-open Elmish
+open Thoth.Fetch
 
-type State = {
-    Name: string
-    Code: string
-}
+open Elmish
+open Shared
+
+type State = Tournament
 
 let defaultState: State = { Name = ""; Code = "" }
 
@@ -21,12 +21,20 @@ let code = Lens ((fun state -> state.Code), (fun state code -> {state with Code 
 
 type Msg =
     | ChangedValue of State
-    | SubmitTournament
+    | CreateTournament
+    | CreatedTournament
+
+let fetchTournamentsCommand (state: State): Cmd<Msg> =
+    Cmd.OfPromise.perform (fun (tournament: Tournament) -> Fetch.post ("/api/tournaments", tournament, isCamelCase = true) ) state (fun () -> CreatedTournament)
 
 let update (msg: Msg) (state: State): State * Cmd<Msg> =
     match msg with
-    | ChangedValue newState -> newState, Cmd.none
-    | SubmitTournament -> state, Cmd.none
+    | ChangedValue newState ->
+        newState, Cmd.none
+    | CreateTournament ->
+        state, fetchTournamentsCommand state
+    | CreatedTournament ->
+        {Name = ""; Code = ""}, Cmd.none
 
 let view (state: State) (dispatch: Msg -> unit) =
     let pageInput = input state (ChangedValue >> dispatch)
@@ -35,4 +43,10 @@ let view (state: State) (dispatch: Msg -> unit) =
         Heading.h2 [] [ str "Create Tournament" ]
         form []
           [ pageInput name "Name" "Advertising name."
-            pageInput code "Code" "Tournament Code for entry." ] ] ]
+            pageInput code "Code" "Tournament Code for entry."
+            Field.div []
+                [ Control.div [] [
+                    Button.span
+                        [ Button.Color IsPrimary
+                          Button.OnClick (fun _ -> dispatch CreateTournament)]
+                        [ str "Create Tournament" ] ] ] ] ] ]
