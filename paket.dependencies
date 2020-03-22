@@ -54,3 +54,15 @@ group Migrations
     nuget Simple.Migrations
 
     nuget Microsoft.Data.Sqlite
+
+group Test
+    source https://api.nuget.org/v3/index.json
+    framework: netcoreapp3.1
+    storage: none
+
+    nuget FSharp.Core
+    nuget coverlet.collector
+    nuget Microsoft.NET.Test.Sdk
+    nuget xunit
+    nuget xunit.runner.visualstudio
+    nuget FsCheck.Xunit
