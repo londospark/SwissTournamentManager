@@ -10,7 +10,9 @@ module Domain =
         | Bye of Player
 
     let pairSimpleSwissRound (state: TournamentState): Pairing list =
-        let gameCount = List.length state / 2
-        let games = [ for i in 1..gameCount do Game ({ Name = ""; Score = 0 }, { Name = ""; Score = 0 })]
-        if List.length state % 2 = 1 then (Bye {Name = ""; Score = 0}) :: games else games
+        let rec generatePairing = function
+        | p1::p2::ps -> [ yield Game (p1, p2); yield! generatePairing ps]
+        | [player] -> [Bye (player)]
+        | [] -> []
 
+        generatePairing state
