@@ -13,6 +13,7 @@ type State = {
 
 type Msg =
     | ChangedValue of State
+    | EnterTournament
     | NotImplemented
 
 let defaultState: State = { TournamentCode = ""; PlayerName = "" }
@@ -24,6 +25,7 @@ let player: Lens<State, string> =
 let update (msg: Msg) (currentModel: State): State * Cmd<Msg> =
     match msg with
     | ChangedValue state -> state, Cmd.none
+    | EnterTournament -> currentModel, Cmd.none
     | NotImplemented -> currentModel, Cmd.none
 
 let view (state: State) (dispatch: Msg -> unit) =
@@ -32,4 +34,5 @@ let view (state: State) (dispatch: Msg -> unit) =
         [ Container.container []
               [ Heading.h2 [ Heading.IsSubtitle ] [ str (sprintf "Entering tournament: %s" state.TournamentCode) ]
                 form []
-                    [ pageInput player "Name" "Name or nickname" ] ] ]
+                    [ pageInput player "Name" "Name or nickname"
+                      button "Enter Tournament" (fun _ -> dispatch EnterTournament) ] ] ]

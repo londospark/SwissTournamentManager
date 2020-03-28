@@ -47,9 +47,4 @@ let view (state: State) (dispatch: Msg -> unit) =
         form []
           [ pageInput name "Name" "Advertising name."
             pageInput code "Code" "Tournament Code for entry."
-            Field.div []
-                [ Control.div [] [
-                    Button.span
-                        [ Button.Color IsPrimary
-                          Button.OnClick (fun _ -> dispatch CreateTournament)]
-                        [ str "Create Tournament" ] ] ] ] ] ]
+            button "Create Tournament" (fun _ -> dispatch CreateTournament) ] ] ]
