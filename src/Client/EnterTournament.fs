@@ -7,6 +7,9 @@ open ViewHelpers
 open Lenses
 open Elmish
 
+open Feliz
+open Feliz.Router
+
 type State = {
     TournamentCode: string
     PlayerName: string }
@@ -14,7 +17,7 @@ type State = {
 type Msg =
     | ChangedValue of State
     | EnterTournament
-    | NotImplemented
+    | EnteredTournament
 
 let defaultState: State = { TournamentCode = ""; PlayerName = "" }
 let tournamentForCode (code: string): State = { defaultState with TournamentCode = code }
@@ -22,11 +25,15 @@ let tournamentForCode (code: string): State = { defaultState with TournamentCode
 let player: Lens<State, string> =
     Lens ((fun state -> state.PlayerName ), (fun state code -> {state with PlayerName = code}))
 
+let enterTournamentCommand : Cmd<Msg> =
+    Cmd.ofMsg EnteredTournament
+    // Cmd.OfPromise.perform ...
+
 let update (msg: Msg) (currentModel: State): State * Cmd<Msg> =
     match msg with
     | ChangedValue state -> state, Cmd.none
-    | EnterTournament -> currentModel, Cmd.none
-    | NotImplemented -> currentModel, Cmd.none
+    | EnterTournament -> currentModel, enterTournamentCommand
+    | EnteredTournament -> currentModel, Router.navigate ("", ["msg", "Tournament Entered!"])
 
 let view (state: State) (dispatch: Msg -> unit) =
         let pageInput = input state (ChangedValue >> dispatch)
