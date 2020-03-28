@@ -25,7 +25,7 @@ module Controller =
   let showAction (ctx: HttpContext) (id : string) =
     task {
       let cnf = Controller.getConfig ctx
-      let! result = Database.getById cnf.connectionString id
+      let! result = Database.getByCode cnf.connectionString id
       match result with
       | Ok (Some result) ->
         return! Response.ok ctx result
@@ -80,6 +80,8 @@ module Controller =
     }
 
   let resource = controller {
+    subController "/entries" EntrySubController.resource
+
     index indexAction
     show showAction
     create createAction

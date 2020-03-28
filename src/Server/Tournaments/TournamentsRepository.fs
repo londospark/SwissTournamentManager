@@ -12,10 +12,10 @@ module Database =
       return! query connection "SELECT name, code FROM Tournaments" None
     }
 
-  let getById connectionString id : Task<Result<Tournament option, exn>> =
+  let getByCode connectionString code : Task<Result<Tournament option, exn>> =
     task {
       use connection = new SqliteConnection(connectionString)
-      return! querySingle connection "SELECT name, code FROM Tournaments WHERE name=@name" (Some <| dict ["id" => id])
+      return! querySingle connection "SELECT name, code FROM Tournaments WHERE code=@code" (Some <| dict ["code" => code])
     }
 
   let update connectionString v : Task<Result<int,exn>> =
