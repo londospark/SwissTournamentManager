@@ -10,9 +10,12 @@ open Fable.React.Props
 
 open Thoth.Fetch
 
-type State = { Tournaments: Tournament list }
+type State = {
+    Tournaments: Tournament list
+    FlashMessage: string
+    }
 
-let defaultState : State = { Tournaments = [] }
+let defaultState : State = { Tournaments = []; FlashMessage = "" }
 
 type Msg =
     | FetchTournaments
@@ -46,6 +49,9 @@ let link (tournament: Tournament) = a [ Href ("/#Enter/" + tournament.Code) ] [ 
 
 let view (state: State) (dispatch: Msg -> unit) =
         [ Container.container [] [
+                h1 [] [ str state.FlashMessage ] ]
+
+          Container.container [] [
             Columns.columns [] [
                 Column.column [] [button "Fetch Tournaments" (fun _ -> dispatch FetchTournaments) ]
                 Column.column [] [linkButton "Create Tournament" "/#CreateTournament" ] ] ]

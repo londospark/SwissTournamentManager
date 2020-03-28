@@ -12,6 +12,9 @@ open Thoth.Fetch
 open Elmish
 open Shared
 
+open Feliz
+open Feliz.Router
+
 type State = Tournament
 
 let defaultState: State = { Name = ""; Code = "" }
@@ -25,7 +28,7 @@ type Msg =
     | CreatedTournament
 
 let createTournamentCommand (state: State): Cmd<Msg> =
-    Cmd.OfPromise.perform (fun (tournament: Tournament) -> Fetch.post ("/api/tournaments", tournament, isCamelCase = true) ) state (fun () -> CreatedTournament)
+    Cmd.OfPromise.perform (fun (tournament: Tournament) -> Fetch.post ("/api/tournaments", tournament, isCamelCase = true) ) state (fun _ -> CreatedTournament)
 
 let update (msg: Msg) (state: State): State * Cmd<Msg> =
     match msg with
@@ -34,7 +37,7 @@ let update (msg: Msg) (state: State): State * Cmd<Msg> =
     | CreateTournament ->
         state, createTournamentCommand state
     | CreatedTournament ->
-        {Name = ""; Code = ""}, Cmd.none
+        {Name = ""; Code = ""}, Router.navigate ("", ["msg", "Tournament Created!"])
 
 let view (state: State) (dispatch: Msg -> unit) =
     let pageInput = input state (ChangedValue >> dispatch)

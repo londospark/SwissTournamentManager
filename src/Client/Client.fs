@@ -33,7 +33,8 @@ type Msg =
 
 let routeToPage (segments: string list): PageState =
     match segments with
-    | [] -> IndexState Index.defaultState
+    | [ ] -> IndexState Index.defaultState
+    | [ Route.Query [ "msg", flash ] ] -> IndexState { Index.defaultState with FlashMessage = flash }
     | ["CreateTournament"] -> CreateTournamentState CreateTournament.defaultState
     | ["Enter"; code] -> EnterTournamentState (EnterTournament.tournamentForCode code)
     | _ -> NotImplemented
