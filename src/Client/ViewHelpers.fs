@@ -18,7 +18,8 @@ let input<'State> (state: 'State) (onUpdate: 'State -> unit) (lens: Lens<'State,
 let button (text: string) (onClick: Browser.Types.MouseEvent -> unit) =
     Field.div []
         [ Control.div [] [
-            Button.span
+            Button.button
                 [ Button.Color IsPrimary
-                  Button.OnClick onClick]
+                  Button.OnClick onClick
+                  Button.Props [ Props.Type "button" ] ]
                 [ str text ] ] ]
