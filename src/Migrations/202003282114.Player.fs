@@ -7,6 +7,7 @@ type CreatePlayers() =
 
   override __.Up() =
     base.Execute(@"CREATE TABLE Players(
+      id INTEGER PRIMARY KEY,
       name TEXT NOT NULL
     )")
 

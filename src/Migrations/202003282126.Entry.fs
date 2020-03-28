@@ -7,8 +7,14 @@ type CreateEntries() =
 
   override __.Up() =
     base.Execute(@"CREATE TABLE Entries(
-      Tournament INT NOT NULL,
-      Player INT NOT NULL
+      Tournament TEXT NOT NULL,
+      Player INT NOT NULL,
+      PRIMARY KEY(Tournament, Player)
+
+      FOREIGN KEY(Tournament) REFERENCES Touranments(Code)
+        ON DELETE CASCADE ON UPDATE NO ACTION,
+      FOREIGN KEY(Player) REFERENCES Players(rowid)
+        ON DELETE CASCADE ON UPDATE NO ACTION
     )")
 
   override __.Down() =

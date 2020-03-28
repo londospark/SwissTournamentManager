@@ -13,6 +13,7 @@ open Config
 open SkiaSharp
 open SkiaSharp.QrCode.Image
 open System
+open Thoth.Json.Net
 
 let toOption (s: string): string option =
     if String.IsNullOrEmpty(s) then None
@@ -49,12 +50,17 @@ let webApp = router {
     forward "/api" apiApp
 }
 
+
+let extraCoders =
+    Extra.empty
+    |> Extra.withInt64
+
 let app = application {
     url ("http://0.0.0.0:" + port.ToString() + "/")
     use_router webApp
     memory_cache
     use_static publicPath
-    use_json_serializer(Thoth.Json.Giraffe.ThothSerializer())
+    use_json_serializer(Thoth.Json.Giraffe.ThothSerializer(extra = extraCoders))
     use_gzip
     use_config (fun _ -> {connectionString = "DataSource=database.sqlite"} )
 }

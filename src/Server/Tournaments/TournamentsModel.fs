@@ -2,7 +2,6 @@ namespace Tournaments
 
 [<CLIMutable>]
 type Tournament = {
-  rowid: int64
   name: string
   code: string
 }

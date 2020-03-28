@@ -8,7 +8,7 @@ type CreateTournaments() =
   override __.Up() =
     base.Execute(@"CREATE TABLE Tournaments(
       name TEXT NOT NULL,
-      code TEXT NOT NULL
+      code TEXT NOT NULL PRIMARY KEY
     )")
 
   override __.Down() =
