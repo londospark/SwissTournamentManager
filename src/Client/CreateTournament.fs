@@ -24,7 +24,7 @@ type Msg =
     | CreateTournament
     | CreatedTournament
 
-let fetchTournamentsCommand (state: State): Cmd<Msg> =
+let createTournamentCommand (state: State): Cmd<Msg> =
     Cmd.OfPromise.perform (fun (tournament: Tournament) -> Fetch.post ("/api/tournaments", tournament, isCamelCase = true) ) state (fun () -> CreatedTournament)
 
 let update (msg: Msg) (state: State): State * Cmd<Msg> =
@@ -32,7 +32,7 @@ let update (msg: Msg) (state: State): State * Cmd<Msg> =
     | ChangedValue newState ->
         newState, Cmd.none
     | CreateTournament ->
-        state, fetchTournamentsCommand state
+        state, createTournamentCommand state
     | CreatedTournament ->
         {Name = ""; Code = ""}, Cmd.none
 
