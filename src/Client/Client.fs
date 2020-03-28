@@ -54,9 +54,14 @@ let update (msg: Msg) (currentModel: State): State * Cmd<Msg> =
         let nextModel = { currentModel with PageState = CreateTournamentState nextPageModel }
         nextModel, cmd |> Cmd.map CreateTournamentMsg
 
+    | EnterTournamentState pageModel, EnterTournamentMsg pageMsg ->
+        let (nextPageModel, cmd) = EnterTournament.update pageMsg pageModel
+        let nextModel = { currentModel with PageState = EnterTournamentState nextPageModel }
+        nextModel, cmd |> Cmd.map EnterTournamentMsg
+
     | IndexState pageModel, IndexMsg pageMsg ->
         let (nextPageModel, cmd) = Index.update pageMsg pageModel
-        let nextModel = { currentModel with PageState = PageState.IndexState nextPageModel }
+        let nextModel = { currentModel with PageState = IndexState nextPageModel }
         nextModel, cmd |> Cmd.map IndexMsg
 
     | _, UrlChanged segments ->

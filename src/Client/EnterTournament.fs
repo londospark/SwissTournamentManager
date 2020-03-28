@@ -3,18 +3,33 @@ module EnterTournament
 open Fulma
 open Fable.React
 
-type State = { TournamentCode: string }
+open ViewHelpers
+open Lenses
+open Elmish
+
+type State = {
+    TournamentCode: string
+    PlayerName: string }
 
 type Msg =
+    | ChangedValue of State
     | NotImplemented
 
-let defaultState: State = { TournamentCode = "" }
-let tournamentForCode (code: string): State = { TournamentCode = code }
+let defaultState: State = { TournamentCode = ""; PlayerName = "" }
+let tournamentForCode (code: string): State = { defaultState with TournamentCode = code }
+
+let player: Lens<State, string> =
+    Lens ((fun state -> state.PlayerName ), (fun state code -> {state with PlayerName = code}))
+
+let update (msg: Msg) (currentModel: State): State * Cmd<Msg> =
+    match msg with
+    | ChangedValue state -> state, Cmd.none
+    | NotImplemented -> currentModel, Cmd.none
 
 let view (state: State) (dispatch: Msg -> unit) =
+        let pageInput = input state (ChangedValue >> dispatch)
+
         [ Container.container []
               [ Heading.h2 [ Heading.IsSubtitle ] [ str (sprintf "Entering tournament: %s" state.TournamentCode) ]
                 form []
-                    [ Field.div []
-                          [ Label.label [] [ str "Name" ]
-                            Control.div [] [ Input.text [ Input.Placeholder "For use in this tournament only." ] ] ] ] ] ]
+                    [ pageInput player "Name" "Name or nickname" ] ] ]
