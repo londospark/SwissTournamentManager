@@ -1,15 +1,9 @@
-namespace Tournaments
+namespace Players
 
 [<CLIMutable>]
-type Tournament = {
-  rowid: int64
+type Player = {
   name: string
-  code: string
 }
-
-module Mappers =
-    let toShared (t: Tournament): Shared.Tournament =
-        { Name = t.name; Code = t.code }
 
 module Validation =
   let validate v =

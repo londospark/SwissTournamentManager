@@ -6,6 +6,8 @@
   <ItemGroup>
 
     <Compile Include="202002182301.Tournament.fs" />
+    <Compile Include="202003282114.Player.fs" />
+    <Compile Include="202003282126.Entry.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />

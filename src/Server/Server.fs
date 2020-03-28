@@ -41,6 +41,7 @@ let tournamentEntryQR code = image (generateQRCode "http://localhost:8080" code)
 
 let apiApp = router {
     forward "/tournaments" Tournaments.Controller.resource
+    forward "/players" Players.Controller.resource
     getf "/qrcode/%s" tournamentEntryQR
 }
 
