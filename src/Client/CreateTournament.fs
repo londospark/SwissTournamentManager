@@ -1,10 +1,15 @@
 module CreateTournament
 
-open Fulma
+open Fable.MaterialUI.Core
+open Fable.MaterialUI.Props
+
 open Fable.React.Helpers
 open Fable.React
 
-open ViewHelpers
+module R = Fable.React.Standard
+module Mui = Fable.MaterialUI.Core
+
+open MaterialViewHelpers
 open Lenses
 
 open Thoth.Fetch
@@ -14,6 +19,9 @@ open Shared
 
 open Feliz
 open Feliz.Router
+open Fable.MaterialUI
+open Fable.Core
+open Fable.React.Props
 
 type State = Tournament
 
@@ -40,11 +48,19 @@ let update (msg: Msg) (state: State): State * Cmd<Msg> =
         {Name = ""; Code = ""}, Router.navigate ("", ["msg", "Tournament Created!"])
 
 let view (state: State) (dispatch: Msg -> unit) =
-    let pageInput = input state (ChangedValue >> dispatch)
+    let pageInput = materialInput state (ChangedValue >> dispatch)
 
-    [ Container.container [] [
-        Heading.h2 [] [ str "Create Tournament" ]
-        form []
-          [ pageInput name "Name" "Advertising name."
-            pageInput code "Code" "Tournament Code for entry."
-            button "Create Tournament" (fun _ -> dispatch CreateTournament) ] ] ]
+    [ main []
+        [ card [
+                CardProp.Raised true
+                Style [
+                    CSSProp.MarginLeft "auto"
+                    CSSProp.MarginRight "auto"
+                    CSSProp.Width 500
+                    CSSProp.AlignItems AlignItemsOptions.Center
+                    CSSProp.Padding 24 ] ]
+            [   typography [Variant TypographyVariant.H5] [ str "Create Tournament" ]
+                form []
+                    [   pageInput name "Name" "Advertising name."
+                        pageInput code "Code" "Tournament Code for entry."
+                        button "Create Tournament" (fun _ -> dispatch CreateTournament) ] ] ] ]
