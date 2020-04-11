@@ -15,7 +15,8 @@ let card (innerElements: ReactElement seq): ReactElement =
     Mui.card
         [ CardProp.Raised true
           Style
-              [ CSSProp.MarginLeft "auto"
+              [ CSSProp.MarginTop 24
+                CSSProp.MarginLeft "auto"
                 CSSProp.MarginRight "auto"
                 CSSProp.Width 500
                 CSSProp.AlignItems AlignItemsOptions.Center
