@@ -9,6 +9,8 @@ open Lenses
 open Fable.React.Helpers
 open Fable.React
 
+let cardTitle (title: string): ReactElement = Mui.typography [ Variant TypographyVariant.H5 ] [ str title ]
+
 let card (innerElements: ReactElement seq): ReactElement =
     Mui.card
         [ CardProp.Raised true

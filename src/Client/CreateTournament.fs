@@ -52,7 +52,7 @@ let update (msg: Msg) (state: State): State * Cmd<Msg> =
 let view (state: State) (dispatch: Msg -> unit) =
     let pageInput = materialInput state (ChangedValue >> dispatch)
     [ card
-        [ Mui.typography [ Variant TypographyVariant.H5 ] [ str "Create Tournament" ]
+        [ cardTitle "Create Tournament"
           form []
                 [ pageInput name "Name" "Advertising name."
                   pageInput code "Code" "Tournament Code for entry."
