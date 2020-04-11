@@ -8,6 +8,7 @@ open Fable.MaterialUI.Props
 open Lenses
 open Fable.React.Helpers
 open Fable.React
+open Fable.MaterialUI.Core
 
 let cardTitle (title: string): ReactElement = Mui.typography [ Variant TypographyVariant.H5 ] [ str title ]
 
@@ -29,6 +30,14 @@ let button (text: string) (onClick: Browser.Types.MouseEvent -> unit) =
           ButtonProp.Variant ButtonVariant.Contained
           MaterialProp.Color ComponentColor.Primary
           OnClick onClick ]
+        [ str text ]
+
+let linkButton (text: string) (href: string) =
+    Mui.button [
+        MaterialProp.FullWidth true
+        ButtonProp.Variant ButtonVariant.Contained
+        MaterialProp.Color ComponentColor.Primary
+        HTMLAttr.Href href ]
         [ str text ]
 
 let input<'State> (state: 'State) (onUpdate: 'State -> unit) (lens: Lens<'State, string>) (label: string) (placeholder: string): ReactElement =

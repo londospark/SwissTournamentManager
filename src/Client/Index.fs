@@ -41,17 +41,18 @@ let link (tournament: Tournament) = a [ Href ("/#Enter/" + tournament.Code) ] [ 
 
 let view (state: State) (dispatch: Msg -> unit) =
     [ card [
-          MaterialViewHelpers.button "Fetch Tournaments" (fun _ -> dispatch FetchTournaments)
-          Mui.button [ HTMLAttr.Href "/#CreateTournament" ] [ str "Create Tournament" ]
-          Mui.table []
-            [ Mui.tableHead []
-                          [ yield Mui.tableRow []
-                                      [ Mui.tableCell [] [ str "Name" ]
-                                        Mui.tableCell [] [ str "QR" ]
-                                        Mui.tableCell [] [ str "Entry Link" ] ] ]
-              Mui.tableBody []
-                          [ for t in state.Tournaments ->
-                              Mui.tableRow []
-                                  [ Mui.tableCell [] [ str t.Name ]
-                                    Mui.tableCell [] [ qrcode t ]
-                                    Mui.tableCell [] [ link t ] ] ] ] ] ]
+        MaterialViewHelpers.button "Fetch Tournaments" (fun _ -> dispatch FetchTournaments)
+        MaterialViewHelpers.linkButton "Create Tournament" "/#CreateTournament"
+        Mui.table [] [
+        Mui.tableHead []
+            [ yield Mui.tableRow []
+                [   Mui.tableCell [] [ str "Name" ]
+                    Mui.tableCell [] [ str "QR" ]
+                    Mui.tableCell [] [ str "Entry Link" ] ] ]
+
+        Mui.tableBody []
+            [ for t in state.Tournaments ->
+                Mui.tableRow []
+                    [ Mui.tableCell [] [ str t.Name ]
+                      Mui.tableCell [] [ qrcode t ]
+                      Mui.tableCell [] [ link t ] ] ] ] ] ]
