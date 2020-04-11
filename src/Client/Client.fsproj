@@ -10,7 +10,6 @@
     <Compile Include="Version.fs" />
     <Compile Include="Lenses.fs" />
     <Compile Include="ViewHelpers.fs" />
-    <Compile Include="MaterialViewHelpers.fs" />
     <Compile Include="CreateTournament.fs" />
     <Compile Include="Index.fs" />
     <Compile Include="EnterTournament.fs" />
