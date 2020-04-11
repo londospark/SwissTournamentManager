@@ -40,7 +40,8 @@ let qrcode (tournament: Tournament) = img [ Src("/api/qrcode/" + tournament.Code
 let link (tournament: Tournament) = a [ Href ("/#Enter/" + tournament.Code) ] [ str ("/#Enter/" + tournament.Code) ]
 
 let view (state: State) (dispatch: Msg -> unit) =
-        [ MaterialViewHelpers.button "Fetch Tournaments" (fun _ -> dispatch FetchTournaments)
+    [ card [
+          MaterialViewHelpers.button "Fetch Tournaments" (fun _ -> dispatch FetchTournaments)
           Mui.button [ HTMLAttr.Href "/#CreateTournament" ] [ str "Create Tournament" ]
           Mui.table []
             [ Mui.tableHead []
@@ -53,4 +54,4 @@ let view (state: State) (dispatch: Msg -> unit) =
                               Mui.tableRow []
                                   [ Mui.tableCell [] [ str t.Name ]
                                     Mui.tableCell [] [ qrcode t ]
-                                    Mui.tableCell [] [ link t ] ] ] ] ]
+                                    Mui.tableCell [] [ link t ] ] ] ] ] ]
