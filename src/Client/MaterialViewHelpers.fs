@@ -30,7 +30,7 @@ let button (text: string) (onClick: Browser.Types.MouseEvent -> unit) =
           OnClick onClick ]
         [ str text ]
 
-let materialInput<'State> (state: 'State) (onUpdate: 'State -> unit) (lens: Lens<'State, string>) (label: string) (placeholder: string): ReactElement =
+let input<'State> (state: 'State) (onUpdate: 'State -> unit) (lens: Lens<'State, string>) (label: string) (placeholder: string): ReactElement =
     Mui.textField [
         Label (str label)
         HTMLAttr.Value (get lens state)

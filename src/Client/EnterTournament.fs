@@ -35,7 +35,7 @@ let update (msg: Msg) (currentModel: State): State * Cmd<Msg> =
     | EnteredTournament -> currentModel, Router.navigate ("", ["msg", "Tournament Entered!"])
 
 let view (state: State) (dispatch: Msg -> unit) =
-        let pageInput = materialInput state (ChangedValue >> dispatch)
+        let pageInput = input state (ChangedValue >> dispatch)
 
         [ card
               [ cardTitle (sprintf "Entering tournament: %s" state.TournamentCode)

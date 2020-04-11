@@ -50,7 +50,7 @@ let update (msg: Msg) (state: State): State * Cmd<Msg> =
           Code = "" }, Router.navigate ("", [ "msg", "Tournament Created!" ])
 
 let view (state: State) (dispatch: Msg -> unit) =
-    let pageInput = materialInput state (ChangedValue >> dispatch)
+    let pageInput = input state (ChangedValue >> dispatch)
     [ card
         [ cardTitle "Create Tournament"
           form []
