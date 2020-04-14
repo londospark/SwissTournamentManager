@@ -4,18 +4,18 @@ open Saturn.Controller
 open FSharp.Control.Tasks.ContextInsensitive
 open Saturn
 open Microsoft.AspNetCore.Http
+open Shared
 
 module EntrySubController =
 
-    type TournamentEntry = { Tournament: string; PlayerName: string; }
-
-    let createAction (ctx: HttpContext) =
+    let createAction tournament ctx =
         task {
-            let! entry = Controller.getModel<TournamentEntry>(ctx)
-            return! Response.ok ctx ""
+            let! entry = Controller.getModel<PlayerName>(ctx)
+            let response = {| Tournament = tournament; PlayerName = entry |}
+            return! Response.ok ctx response
         }
 
     let resource (tournament: string) = controller {
-        create createAction
+        create (createAction tournament)
         index (fun ctx -> (sprintf "Tournament index handler for %s" tournament ) |> Controller.text ctx)
     }
