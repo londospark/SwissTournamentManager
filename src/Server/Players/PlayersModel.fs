@@ -2,6 +2,7 @@ namespace Players
 
 [<CLIMutable>]
 type Player = {
+  id: int64 option
   name: string
 }
 

@@ -4,16 +4,18 @@ open Microsoft.AspNetCore.Http
 open FSharp.Control.Tasks.ContextInsensitive
 open Config
 open Saturn
+open System.Threading.Tasks
 
 module Controller =
 
-  let indexAction (ctx : HttpContext) =
+  let indexAction (ctx : HttpContext): Task<Player list> =
     task {
       let cnf = Controller.getConfig ctx
       let! result = Database.getAll cnf.connectionString
       match result with
       | Ok result ->
         return result
+        |> Seq.toList
       | Error ex ->
         return raise ex
     }
@@ -21,7 +23,7 @@ module Controller =
   let showAction (ctx: HttpContext) (id : string) =
     task {
       let cnf = Controller.getConfig ctx
-      let! result = Database.getById cnf.connectionString id
+      let! result = Database.getByName cnf.connectionString id
       match result with
       | Ok (Some result) ->
         return! Response.ok ctx result

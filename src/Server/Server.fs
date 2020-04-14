@@ -41,6 +41,7 @@ let generateQRCode (host: string) (tournamentcode: string) : MemoryStream =
 let tournamentEntryQR code = image (generateQRCode "http://localhost:8080" code)
 
 let apiApp = router {
+    forward "/players" Players.Controller.resource
     forward "/tournaments" Tournaments.Controller.resource
     forward "/players" Players.Controller.resource
     getf "/qrcode/%s" tournamentEntryQR
