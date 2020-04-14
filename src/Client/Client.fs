@@ -6,7 +6,11 @@ open Fable.React
 open Fable.React.Props
 open Fetch.Types
 open Thoth.Fetch
-open Fulma
+
+
+module R = Fable.React.Standard
+module Mui = Fable.MaterialUI.Core
+
 open Thoth.Json
 
 open Feliz
@@ -14,6 +18,7 @@ open Feliz.Router
 
 open Shared
 open Fable.Core.JS
+open Fable.MaterialUI
 
 type PageState =
     | CreateTournamentState of CreateTournament.State
@@ -72,11 +77,10 @@ let update (msg: Msg) (currentModel: State): State * Cmd<Msg> =
 
 let mainLayout (body: ReactElement list): ReactElement =
     div []
-        [ Navbar.navbar [ Navbar.Color IsInfo ]
-              [ Navbar.Brand.div []
-                    [ Navbar.Link.a
-                        [ Navbar.Link.IsArrowless
-                          Navbar.Link.Props [ Href "#" ] ] [ str "Swiss Tournament Manager" ] ] ]
+        [ Mui.appBar [
+            AppBarProp.Position AppBarPosition.Sticky]
+              [  Mui.toolbar [] [
+                  Mui.typography [ Variant TypographyVariant.H6 ] [ str "Swiss Tournament Manager"] ] ]
           yield! body ]
 
 

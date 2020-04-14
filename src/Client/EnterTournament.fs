@@ -1,9 +1,8 @@
 module EnterTournament
 
-open Fulma
 open Fable.React
 
-open ViewHelpers
+open MaterialViewHelpers
 open Lenses
 open Elmish
 
@@ -38,8 +37,8 @@ let update (msg: Msg) (currentModel: State): State * Cmd<Msg> =
 let view (state: State) (dispatch: Msg -> unit) =
         let pageInput = input state (ChangedValue >> dispatch)
 
-        [ Container.container []
-              [ Heading.h2 [ Heading.IsSubtitle ] [ str (sprintf "Entering tournament: %s" state.TournamentCode) ]
+        [ card
+              [ cardTitle (sprintf "Entering tournament: %s" state.TournamentCode)
                 form []
                     [ pageInput player "Name" "Name or nickname"
                       button "Enter Tournament" (fun _ -> dispatch EnterTournament) ] ] ]

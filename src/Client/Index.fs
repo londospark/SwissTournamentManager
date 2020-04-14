@@ -3,12 +3,17 @@ module Index
 open Shared
 
 open Elmish
-open Fulma
+open MaterialViewHelpers
+
+module R = Fable.React.Standard
+module Mui = Fable.MaterialUI.Core
+
 open Fable.React.Helpers
 open Fable.React
 open Fable.React.Props
 
 open Thoth.Fetch
+open Fable.MaterialUI
 
 type State = {
     Tournaments: Tournament list
@@ -31,41 +36,23 @@ let update (msg: Msg) (currentModel: State): State * Cmd<Msg> =
         let nextModel = { currentModel with Tournaments = tournaments }
         nextModel, Cmd.none
 
-
-let button txt onClick =
-    Button.button
-        [ Button.IsFullWidth
-          Button.Color IsPrimary
-          Button.OnClick onClick ] [ str txt ]
-
-let linkButton txt href =
-    Button.a
-        [ Button.IsFullWidth
-          Button.Color IsPrimary
-          Button.Props [ Href href ] ] [ str txt ]
-
 let qrcode (tournament: Tournament) = img [ Src("/api/qrcode/" + tournament.Code) ]
 let link (tournament: Tournament) = a [ Href ("/#Enter/" + tournament.Code) ] [ str ("/#Enter/" + tournament.Code) ]
 
 let view (state: State) (dispatch: Msg -> unit) =
-        [ Container.container [] [
-                h1 [] [ str state.FlashMessage ] ]
+    [ card [
+        MaterialViewHelpers.button "Fetch Tournaments" (fun _ -> dispatch FetchTournaments)
+        MaterialViewHelpers.linkButton "Create Tournament" "/#CreateTournament"
+        Mui.table [] [
+        Mui.tableHead []
+            [ yield Mui.tableRow []
+                [   Mui.tableCell [] [ str "Name" ]
+                    Mui.tableCell [] [ str "QR" ]
+                    Mui.tableCell [] [ str "Entry Link" ] ] ]
 
-          Container.container [] [
-            Columns.columns [] [
-                Column.column [] [button "Fetch Tournaments" (fun _ -> dispatch FetchTournaments) ]
-                Column.column [] [linkButton "Create Tournament" "/#CreateTournament" ] ] ]
-
-          Container.container []
-              [ Table.table []
-                    [ thead []
-                          [ yield tr []
-                                      [ th [] [ str "Name" ]
-                                        th [] [ str "QR" ]
-                                        th [] [ str "Entry Link" ] ] ]
-                      tbody []
-                          [ for t in state.Tournaments ->
-                              tr []
-                                  [ td [] [ str t.Name ]
-                                    td [] [ qrcode t ]
-                                    td [] [ link t ] ] ] ] ] ]
+        Mui.tableBody []
+            [ for t in state.Tournaments ->
+                Mui.tableRow []
+                    [ Mui.tableCell [] [ str t.Name ]
+                      Mui.tableCell [] [ qrcode t ]
+                      Mui.tableCell [] [ link t ] ] ] ] ] ]
