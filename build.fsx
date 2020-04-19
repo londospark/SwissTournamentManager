@@ -32,7 +32,6 @@ let platformTool tool winTool =
             "See https://safe-stack.github.io/docs/quickstart/#install-pre-requisites for more info"
         failwith errorMsg
 
-let paketTool = platformTool "paket" "paket.exe"
 let nodeTool = platformTool "node" "node.exe"
 let yarnTool = platformTool "yarn" "yarn.cmd"
 
@@ -66,7 +65,7 @@ Target.create "Clean" (fun _ ->
 )
 
 Target.create "PaketInstall" (fun _ ->
-    runTool paketTool "install" __SOURCE_DIRECTORY__
+    runDotNet "paket install" __SOURCE_DIRECTORY__
 )
 
 Target.create "InstallClient" (fun _ ->
