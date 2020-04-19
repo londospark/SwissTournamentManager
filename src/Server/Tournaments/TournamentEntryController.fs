@@ -15,9 +15,12 @@ module EntrySubController =
             let cnf = Controller.getConfig ctx
             let! player = Players.Database.getOrCreateByName cnf.connectionString playerName
             match player with
-            | Ok p ->
+            | Ok ({name = _; id = Some id}) ->
                 // TODO(gareth): Players in the DB always have an id, players that we insert don't - maybe model this better?
-                return! Response.ok ctx (sprintf "Player found with name %s and id %A" p.name p.id)
+                let entry = {Tournament = tournament; Player = id}
+                Database.enter cnf.connectionString entry |> ignore
+                return! Response.ok ctx (sprintf "Player %d entered into tournament %s" id tournament)
+            | Ok _ -> return raise (exn "BOOM, BOOM, BOOM, BOOM!")
             | Error ex ->
                 return raise ex
         }

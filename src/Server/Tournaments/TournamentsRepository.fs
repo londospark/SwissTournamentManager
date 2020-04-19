@@ -5,6 +5,8 @@ open Microsoft.Data.Sqlite
 open System.Threading.Tasks
 open FSharp.Control.Tasks.ContextInsensitive
 
+type Entry = { Tournament: string; Player: int64 }
+
 module Database =
   let getAll connectionString : Task<Result<Tournament seq, exn>> =
     task {
@@ -34,5 +36,11 @@ module Database =
     task {
       use connection = new SqliteConnection(connectionString)
       return! execute connection "DELETE FROM Tournaments WHERE name=@name" (dict ["id" => id])
+    }
+
+  let enter connectionString entry: Task<Result<int, exn>> =
+    task {
+        use connection = new SqliteConnection(connectionString)
+        return! execute connection "INSERT INTO `Entries` (Tournament, Player) VALUES (@code, @player_id)" (dict ["code" => entry.Tournament; "player_id" => entry.Player])
     }
 
