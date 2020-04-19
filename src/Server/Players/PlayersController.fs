@@ -20,10 +20,10 @@ module Controller =
         return raise ex
     }
 
-  let showAction (ctx: HttpContext) (id : string) =
+  let showAction (ctx: HttpContext) (id : int) =
     task {
       let cnf = Controller.getConfig ctx
-      let! result = Database.getByName cnf.connectionString id
+      let! result = Database.getById cnf.connectionString id
       match result with
       | Ok (Some result) ->
         return! Response.ok ctx result
@@ -50,7 +50,7 @@ module Controller =
         return! Response.badRequest ctx "Validation failed"
     }
 
-  let updateAction (ctx: HttpContext) (id : string) =
+  let updateAction (ctx: HttpContext) (id : int) =
     task {
       let! input = Controller.getModel<Player> ctx
       let validateResult = Validation.validate input
@@ -66,7 +66,7 @@ module Controller =
         return! Response.badRequest ctx "Validation failed"
     }
 
-  let deleteAction (ctx: HttpContext) (id : string) =
+  let deleteAction (ctx: HttpContext) (id : int) =
     task {
       let cnf = Controller.getConfig ctx
       let! result = Database.delete cnf.connectionString id

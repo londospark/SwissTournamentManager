@@ -4,6 +4,7 @@ open Database
 open Microsoft.Data.Sqlite
 open System.Threading.Tasks
 open FSharp.Control.Tasks.ContextInsensitive
+open Shared
 
 module Database =
   let getAll connectionString : Task<Result<Player seq, exn>> =
@@ -12,7 +13,7 @@ module Database =
       return! query connection "SELECT id, name FROM Players" None
     }
 
-  let getByName connectionString name : Task<Result<Player option, exn>> =
+  let getByName connectionString (PlayerName name) : Task<Result<Player option, exn>> =
     task {
       use connection = new SqliteConnection(connectionString)
       return! querySingle connection "SELECT id, name FROM Players WHERE name=@name" (Some <| dict ["name" => name])
