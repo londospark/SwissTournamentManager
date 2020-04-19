@@ -8,12 +8,12 @@ type CreateEntries() =
   override __.Up() =
     base.Execute(@"CREATE TABLE Entries(
       Tournament TEXT NOT NULL,
-      Player INT NOT NULL,
+      Player INTEGER NOT NULL,
       PRIMARY KEY(Tournament, Player)
 
-      FOREIGN KEY(Tournament) REFERENCES Touranments(Code)
+      FOREIGN KEY(Tournament) REFERENCES Tournaments(Code)
         ON DELETE CASCADE ON UPDATE NO ACTION,
-      FOREIGN KEY(Player) REFERENCES Players(rowid)
+      FOREIGN KEY(Player) REFERENCES Players(id)
         ON DELETE CASCADE ON UPDATE NO ACTION
     )")
 

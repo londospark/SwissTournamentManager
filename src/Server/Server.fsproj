@@ -11,13 +11,13 @@
     <Compile Include="Config.fs" />
     <Compile Include="Database.fs" />
     <Compile Include="../Shared/Shared.fs" />
+    <Compile Include="Players/PlayersModel.fs" />
+    <Compile Include="Players/PlayersRepository.fs" />
+    <Compile Include="Players/PlayersController.fs" />
     <Compile Include="Tournaments/TournamentsModel.fs" />
     <Compile Include="Tournaments/TournamentsRepository.fs" />
     <Compile Include="Tournaments/TournamentEntryController.fs" />
     <Compile Include="Tournaments/TournamentsController.fs" />
-    <Compile Include="Players/PlayersModel.fs" />
-    <Compile Include="Players/PlayersRepository.fs" />
-    <Compile Include="Players/PlayersController.fs" />
     <Compile Include="Server.fs" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
