@@ -5,6 +5,7 @@ open FSharp.Control.Tasks.ContextInsensitive
 open Config
 open Saturn
 open System.Threading.Tasks
+open Shared
 
 module Controller =
 
@@ -26,7 +27,7 @@ module Controller =
       let! result = Database.getById cnf.connectionString id
       match result with
       | Ok (Some result) ->
-        return! Response.ok ctx result
+        return! Response.ok ctx result.name
       | Ok None ->
         return! Response.notFound ctx "Value not found"
       | Error ex ->

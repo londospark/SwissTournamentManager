@@ -13,13 +13,11 @@ module EntrySubController =
         task {
             let! playerName = Controller.getModel<PlayerName>(ctx)
             let cnf = Controller.getConfig ctx
-            let! player = Players.Database.getByName cnf.connectionString playerName
+            let! player = Players.Database.getOrCreateByName cnf.connectionString playerName
             match player with
-            | Ok (Some result) ->
+            | Ok p ->
                 // TODO(gareth): Players in the DB always have an id, players that we insert don't - maybe model this better?
-                return! Response.ok ctx (sprintf "Player found with name %s and id %A" result.name result.id)
-            | Ok None ->
-                return! Response.notFound ctx "Player not found"
+                return! Response.ok ctx (sprintf "Player found with name %s and id %A" p.name p.id)
             | Error ex ->
                 return raise ex
         }
