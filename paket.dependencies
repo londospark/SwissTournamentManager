@@ -16,8 +16,6 @@ group Server
     nuget Dapper
     nuget Microsoft.Data.Sqlite
 
-    clitool dotnet-saturn
-
 group Client
     source https://api.nuget.org/v3/index.json
     framework: netstandard2.0

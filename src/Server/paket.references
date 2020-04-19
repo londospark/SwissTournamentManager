@@ -7,5 +7,3 @@ group Server
 
     Dapper
     Microsoft.Data.Sqlite
-
-    dotnet-saturn
