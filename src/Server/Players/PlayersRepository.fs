@@ -44,20 +44,36 @@ module Database =
     }
 
   let getOrCreateByName connectionString (PlayerName name) : Task<Result<Player, exn>> =
-    task {
-      let! existingPlayer = getByName connectionString (PlayerName name)
-      match existingPlayer with
-      | Error ex -> return Error ex
-      | Ok (Some player) -> return Ok player
-      | Ok None ->
+
+    let conditionalExecute taskFunction previousResult = task {
+        match previousResult with
+        | Error ex -> return Error ex
+        | Ok (Some player) -> return Ok (Some player)
+        | _ -> return! taskFunction()
+    }
+
+    let checkPlayerExists() = task {
+        let! existingPlayer = getByName connectionString (PlayerName name)
+        match existingPlayer with
+        | Error ex -> return Error ex
+        | Ok (Some player) -> return Ok (Some player)
+        | Ok None -> return Ok None
+    }
+
+    let tryToInsertPlayer() = task {
         let! affectedRows = insert connectionString name
         match affectedRows with
         | Error ex -> return Error ex
-        | Ok _ ->
-            let! player = getByName connectionString (PlayerName name)
-            match player with
-            | Ok (Some p) -> return Ok p
-            | Ok None -> return Error (exn "Player added but not found on a second look.")
-            | Error ex -> return Error ex
+        | Ok _ -> return Ok None
     }
 
+    task {
+        let! checkPlayerResult = checkPlayerExists()
+        let! insertPlayerResult = conditionalExecute tryToInsertPlayer checkPlayerResult
+        let! finalResult = conditionalExecute checkPlayerExists insertPlayerResult
+
+        match finalResult with
+        | Error ex -> return Error ex
+        | Ok (Some player) -> return Ok player
+        | _ -> return Error (exn "Player added but not found on a second look.")
+    }
