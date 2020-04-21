@@ -44,12 +44,12 @@ module Database =
     }
 
   let getOrCreateByName connectionString (PlayerName name) : Task<Result<Player, exn>> =
-    // Helper functions
-    let condExec f m = task {
-        match m with
+
+    let conditionalExecute taskFunction previousResult = task {
+        match previousResult with
         | Error ex -> return Error ex
         | Ok (Some player) -> return Ok (Some player)
-        | _ -> return! f()
+        | _ -> return! taskFunction()
     }
 
     let checkPlayerExists() = task {
@@ -66,15 +66,13 @@ module Database =
         | Error ex -> return Error ex
         | Ok _ -> return Ok None
     }
-    // ----------------
 
-    // Logic main body
     task {
-        let! myResult1 = checkPlayerExists()
-        let! myResult2 = condExec tryToInsertPlayer myResult1
-        let! myResult3 = condExec checkPlayerExists myResult2
+        let! checkPlayerResult = checkPlayerExists()
+        let! insertPlayerResult = conditionalExecute tryToInsertPlayer checkPlayerResult
+        let! finalResult = conditionalExecute checkPlayerExists insertPlayerResult
 
-        match myResult3 with
+        match finalResult with
         | Error ex -> return Error ex
         | Ok (Some player) -> return Ok player
         | _ -> return Error (exn "Player added but not found on a second look.")
