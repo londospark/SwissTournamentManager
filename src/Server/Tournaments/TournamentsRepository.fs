@@ -3,7 +3,7 @@ namespace Tournaments
 open Database
 open Microsoft.Data.Sqlite
 open System.Threading.Tasks
-open FSharp.Control.Tasks.ContextInsensitive
+open FSharp.Control.Tasks.V2.ContextInsensitive
 
 type Entry = { Tournament: string; Player: int64 }
 

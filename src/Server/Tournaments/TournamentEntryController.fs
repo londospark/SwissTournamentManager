@@ -1,7 +1,7 @@
 namespace Tournaments
 
 open Saturn.Controller
-open FSharp.Control.Tasks.ContextInsensitive
+open FSharp.Control.Tasks.V2.ContextInsensitive
 open Saturn
 open Microsoft.AspNetCore.Http
 open Shared

@@ -1,7 +1,7 @@
 namespace Tournaments
 
 open Microsoft.AspNetCore.Http
-open FSharp.Control.Tasks.ContextInsensitive
+open FSharp.Control.Tasks.V2.ContextInsensitive
 open Config
 open Saturn
 open System.Threading.Tasks

@@ -3,7 +3,7 @@ namespace Entries
 open Database
 open Microsoft.Data.Sqlite
 open System.Threading.Tasks
-open FSharp.Control.Tasks.ContextInsensitive
+open FSharp.Control.Tasks.V2.ContextInsensitive
 
 module Database =
   let getAll connectionString : Task<Result<Entry seq, exn>> =
