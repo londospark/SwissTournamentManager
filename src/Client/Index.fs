@@ -36,8 +36,10 @@ let update (msg: Msg) (currentModel: State): State * Cmd<Msg> =
         let nextModel = { currentModel with Tournaments = tournaments }
         nextModel, Cmd.none
 
-let qrcode (tournament: Tournament) = img [ Src("/api/qrcode/" + tournament.Code) ]
-let link (tournament: Tournament) = a [ Href ("/#Enter/" + tournament.Code) ] [ str ("/#Enter/" + tournament.Code) ]
+let qrcode tournament = img [ Src("/api/qrcode/" + tournament.Code) ]
+let entryLink tournament = a [ Href ("/#Enter/" + tournament.Code) ] [ str ("/#Enter/" + tournament.Code) ]
+
+let managementLink tournament = a [ Href ("/#Manage/" + tournament.Code) ] [ str ("/#Manage/" + tournament.Code) ]
 
 let view (state: State) (dispatch: Msg -> unit) =
     [ card [
@@ -48,11 +50,13 @@ let view (state: State) (dispatch: Msg -> unit) =
             [ yield Mui.tableRow []
                 [   Mui.tableCell [] [ str "Name" ]
                     Mui.tableCell [] [ str "QR" ]
-                    Mui.tableCell [] [ str "Entry Link" ] ] ]
+                    Mui.tableCell [] [ str "Entry Link" ]
+                    Mui.tableCell [] [ str "Management Link" ] ] ]
 
         Mui.tableBody []
             [ for t in state.Tournaments ->
                 Mui.tableRow []
                     [ Mui.tableCell [] [ str t.Name ]
                       Mui.tableCell [] [ qrcode t ]
-                      Mui.tableCell [] [ link t ] ] ] ] ] ]
+                      Mui.tableCell [] [ entryLink t ]
+                      Mui.tableCell [] [ managementLink t ] ] ] ] ] ]
