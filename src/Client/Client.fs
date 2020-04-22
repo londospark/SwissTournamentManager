@@ -38,22 +38,23 @@ type Msg =
     | EnterTournamentMsg of EnterTournament.Msg
     | ManageTournamentMsg of ManageTournament.Msg
 
-let routeToPage (segments: string list): PageState =
+let routeToPage (segments: string list): PageState * Cmd<Msg> =
     match segments with
-    | [ ] -> IndexState Index.defaultState
-    | [ Route.Query [ "msg", flash ] ] -> IndexState { Index.defaultState with FlashMessage = flash }
-    | ["CreateTournament"] -> CreateTournamentState CreateTournament.defaultState
-    | ["Enter"; code] -> EnterTournamentState (EnterTournament.tournamentForCode code)
-    | ["Manage"; code] -> ManageTournamentState (ManageTournament.tournamentForCode code)
-    | _ -> NotImplemented
+    | [ ] -> IndexState Index.defaultState, Cmd.none
+    | [ Route.Query [ "msg", flash ] ] -> IndexState { Index.defaultState with FlashMessage = flash }, Cmd.none
+    | ["CreateTournament"] -> CreateTournamentState CreateTournament.defaultState, Cmd.none
+    | ["Enter"; code] -> EnterTournamentState (EnterTournament.tournamentForCode code), Cmd.none
+    | ["Manage"; code] -> ManageTournamentState (ManageTournament.tournamentForCode code), ManageTournament.loadContent |> Cmd.map ManageTournamentMsg
+    | _ -> NotImplemented, Cmd.none
 
 let init(): State * Cmd<Msg> =
     let segments = Router.currentUrl()
+    let pageState, command = routeToPage segments
     let initialModel =
         { UrlSegments = segments
-          PageState = routeToPage segments }
+          PageState = pageState }
 
-    initialModel, Cmd.none
+    initialModel, command
 
 let update (msg: Msg) (currentModel: State): State * Cmd<Msg> =
     match currentModel.PageState, msg with
@@ -72,9 +73,15 @@ let update (msg: Msg) (currentModel: State): State * Cmd<Msg> =
         let nextModel = { currentModel with PageState = IndexState nextPageModel }
         nextModel, cmd |> Cmd.map IndexMsg
 
+    | ManageTournamentState pageModel, ManageTournamentMsg pageMsg ->
+        let (nextPageModel, cmd) = ManageTournament.update pageMsg pageModel
+        let nextModel = { currentModel with PageState = ManageTournamentState nextPageModel }
+        nextModel, cmd |> Cmd.map ManageTournamentMsg
+
     | _, UrlChanged segments ->
-        let nextModel = { UrlSegments = segments; PageState = routeToPage segments }
-        nextModel, Cmd.none
+        let pageState, command = routeToPage segments
+        let nextModel = { UrlSegments = segments; PageState = pageState }
+        nextModel, command
 
     | _ -> currentModel, Cmd.none
 

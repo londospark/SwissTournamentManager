@@ -9,7 +9,7 @@ open Shared
 
 module Controller =
 
-  let indexAction (ctx : HttpContext): Task<Player list> =
+  let indexAction (ctx : HttpContext): Task<PlayerName list> =
     task {
       let cnf = Controller.getConfig ctx
       let! result = Database.getAll cnf.connectionString
@@ -17,6 +17,7 @@ module Controller =
       | Ok result ->
         return result
         |> Seq.toList
+        |> List.map (fun player -> PlayerName player.name)
       | Error ex ->
         return raise ex
     }
