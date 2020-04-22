@@ -52,13 +52,7 @@ module Database =
         | _ -> return! taskFunction()
     }
 
-    let checkPlayerExists() = task {
-        let! existingPlayer = getByName connectionString (PlayerName name)
-        match existingPlayer with
-        | Error ex -> return Error ex
-        | Ok (Some player) -> return Ok (Some player)
-        | Ok None -> return Ok None
-    }
+    let checkPlayerExists() = getByName connectionString (PlayerName name)
 
     let tryToInsertPlayer() = task {
         let! affectedRows = insert connectionString name
