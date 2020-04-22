@@ -24,6 +24,7 @@ type PageState =
     | CreateTournamentState of CreateTournament.State
     | IndexState of Index.State
     | EnterTournamentState of EnterTournament.State
+    | ManageTournamentState of ManageTournament.State
     | NotImplemented
 
 type State =
@@ -35,6 +36,7 @@ type Msg =
     | CreateTournamentMsg of CreateTournament.Msg
     | IndexMsg of Index.Msg
     | EnterTournamentMsg of EnterTournament.Msg
+    | ManageTournamentMsg of ManageTournament.Msg
 
 let routeToPage (segments: string list): PageState =
     match segments with
@@ -42,6 +44,7 @@ let routeToPage (segments: string list): PageState =
     | [ Route.Query [ "msg", flash ] ] -> IndexState { Index.defaultState with FlashMessage = flash }
     | ["CreateTournament"] -> CreateTournamentState CreateTournament.defaultState
     | ["Enter"; code] -> EnterTournamentState (EnterTournament.tournamentForCode code)
+    | ["Manage"; code] -> ManageTournamentState (ManageTournament.tournamentForCode code)
     | _ -> NotImplemented
 
 let init(): State * Cmd<Msg> =
@@ -95,6 +98,9 @@ let view (state: State) (dispatch: Msg -> unit) =
 
         | EnterTournamentState model ->
             EnterTournament.view model (EnterTournamentMsg >> dispatch)
+
+        | ManageTournamentState model ->
+            ManageTournament.view model (ManageTournamentMsg >> dispatch)
 
         | NotImplemented -> [ div [] [ str (sprintf "%A" state.UrlSegments) ] ]
 
